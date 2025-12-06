@@ -27,12 +27,12 @@
     filetype plugin on
     filetype plugin indent on
 
-    set encoding=utf-8              " character encoding used inside Vim.
-    scriptencoding utf-8            " if you set the 'encoding' option :scriptencoding must be placed after that.
-    set fileencoding=utf-8          " character encoding for the file of buffers.
+    set encoding=utf-8              " character encoding used inside vim.
+    scriptencoding utf-8            " when setting 'encoding', scriptencoding must be placed after that.
+    set fileencoding=utf-8          " when buffer 'fileencoding' is different from 'encoding', conversion will be done.
     set fileencodings=ucs-bom,utf-8,gbk,gb2312,gb18030,big5,cp936,latin1
 
-    syntax enable                   " Syntax highlighting
+    syntax enable                   " Enable syntax highlighting.
 
     set shortmess+=filmnrxoOatTI    " 保留欢迎界面? set shortmess-=I
     set autoindent                  " Indent at the same level of the previous line
@@ -80,7 +80,7 @@
     silent! set diffopt+=algorithm:patience               " Better algorithm for Vim 8.1+
 
     " pastetoggle (sane indentation on pastes)
-     silent! set pastetoggle=<F12>
+    silent! set pastetoggle=<F12>
     if has('clipboard')
       silent! set clipboard=unnamed
       silent! set clipboard+=unnamedplus     " When possible use + register for copy-paste
@@ -112,16 +112,15 @@
       set grepprg=rg\ --vimgrep\ --no-heading\ --follow\ --smart-case
     endif
 
-    "set backup                  " Backups are nice ...
-    set nobackup                " 设置无备份文件
-    set writebackup             " 保存文件前建立备份，保存成功后删除该备份
-    set noswapfile              " 设置无临时文件
-    if has('persistent_undo')     " Enable persistent_undo
-      set undofile                " So is persistent undo ...
-      set undolevels=1000         " Maximum number of changes that can be undone
-      set undoreload=10000        " Maximum number lines to save for undo on a buffer reload
-      " Put undofile in the unified directory
-      let uDir = MyVimrcDir().'/.vim/undo'
+    "set backup                      " Backups are nice ...
+    set nobackup                    " 设置无备份文件
+    set writebackup                 " 保存文件前建立备份，保存成功后删除该备份
+    set noswapfile                  " 设置无临时文件
+    if has('persistent_undo')       " Check and enable persistent_undo
+      set undofile                          " Saves undo history to undo file when writing a buffer
+      set undolevels=1000                   " Maximum number of changes that can be undone
+      set undoreload=10000                  " Maximum number lines to save for undo on a buffer reload
+      let uDir = MyVimrcDir().'/.vim/undo'  " Put undofile in the unified directory
       if !isdirectory(uDir) && exists('*mkdir')
         call mkdir(uDir, 'p', 0o700)
       endif
@@ -131,24 +130,23 @@
 
 
 " UI Settings {
-    " set background, toggle between dark and light
-    set background=dark
+    set background=dark             " Set background, toggle between dark and light
     nnoremap <silent> <leader>tb <Cmd>if &bg ==? "dark"<Bar>set bg=light<Bar>else<Bar>set bg=dark<Bar>endif<CR>
     set winminheight=0              " Windows can be 0 line high
     set splitright                  " Puts new vsplit windows to the right of the current
     set splitbelow                  " Puts new split windows to the bottom of the current
     set fillchars=vert:\ ,fold:-    " Sets characters to fill the statuslines and vertical separators.
-    "set t_Co=256                    " 8-bit color (256 colors) to make xterm/win32 vim shine
+    "set t_Co=256                    " 8-bit color (256 colors) makes xterm/win32 vim shine
     set termguicolors               " Using guibg/fg attributes in terminal, true color(24-bit color) is required.
     set cursorline                  " Highlight current line
     set scrolljump=5                " Lines to scroll when cursor leaves screen
-    set scrolloff=3                 " Minimum lines to keep above and below cursor
+    set scrolloff=3                 " Minimum screen lines to keep above and below cursor
 
-    set cmdheight=2                 " Set command line height as 2，default 1
+    set cmdheight=2                 " Set the command line height as 2，default is 1
     if has('cmdline_info')
-      set ruler                     " show the ruler
-      set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)     " a ruler on steroids
-      set showcmd    " show partial command in status line and selected chars/lines in visual mode
+      set ruler                     " Show the line and column number of the cursor position
+      set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)       " a ruler on steroids
+      set showcmd    " show command and selected chars/lines in visual mode in the last line
     endif
 
     if has('statusline')            " Add functions for statusline customizations
@@ -170,8 +168,8 @@
       silent function! GitBranch()
         return exists('*FugitiveHead')? FugitiveHead() : ''
       endfunction
-      " Broken down into includeable segments, settings from %= is for right side
-      " Showing window number right, you can goto next window with winnr +<C-W>w
+      " Broken down into includeable segments, settings after %= is for right side
+      " Highlight the bottom-right winnr for easy navigation with winnr+ <CTRL-W>w
       set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*
       set stl+=%#User2#%{GitBranch()!=#''?'\ '.GitBranch().'\ \|':''}%*
       set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%{->&bl&&empty(&bt)?'%t':'%f'}()%}\ %*
@@ -185,10 +183,10 @@
     " Customizations of highlight
     silent function! SetHighlights()
       " highlight groups for statusline customizations
-      hi! StatusLine cterm=bold ctermbg=NONE ctermfg=255 gui=bold guibg=NONE guifg=#FFFFFF
-      hi! StatusLineNC cterm=NONE ctermbg=NONE ctermfg=250 gui=none guibg=NONE guifg=#BCBCBC
-      hi! StatusLineTerm cterm=bold ctermbg=NONE ctermfg=255 gui=bold guibg=NONE guifg=#FFFFFF
-      hi! StatusLineTermNC cterm=NONE ctermbg=NONE ctermfg=250 gui=none guibg=NONE guifg=#BCBCBC
+      hi! StatusLine cterm=NONE ctermbg=NONE ctermfg=255 gui=NONE guibg=NONE guifg=#FFFFFF
+      hi! StatusLineNC cterm=NONE ctermbg=NONE ctermfg=250 gui=NONE guibg=NONE guifg=#BCBCBC
+      hi! StatusLineTerm cterm=NONE ctermbg=NONE ctermfg=255 gui=NONE guibg=NONE guifg=#FFFFFF
+      hi! StatusLineTermNC cterm=NONE ctermbg=NONE ctermfg=250 gui=NONE guibg=NONE guifg=#BCBCBC
       hi! User1 ctermbg=24 guibg=#264F78
       hi! User2 ctermbg=238 guibg=#3A3D41
       hi! User3 ctermbg=NONE guibg=NONE
@@ -484,11 +482,29 @@
 " Key Mappings / Commands / Autocmds {
     inoremap jk <ESC>
     nnoremap <BS> :noh<CR>
-    " 注：在常规模式下，输入 <leader>cM (按<leader>键再按c键再按M键，无须同时，允许按键间隔一秒) 可清除行尾^M符号
+    " 注：在常规模式下，按<leader>键再按c键再按M键（无须同时，允许按键间隔一秒）可清除行尾 ^M 符号
     nnoremap <leader>cM :%s/\r$//g<CR>:noh<CR>
-    " 重读/在新的分屏中打开我的 ~/.vimrc 文件 (:vsplit $MYVIMRC<CR> 和 :source $MYVIMRC<CR>)
+    " 重读/在新的分屏中打开我的 ~/.vimrc 文件，命令（:vsplit $MYVIMRC<CR> 和 :source $MYVIMRC<CR>）
     nnoremap <leader>ve :exec 'vsplit '.g:this_vimrc<CR>
     nnoremap <leader>sv :exec 'source '.g:this_vimrc<CR>
+    " Insert current time at the cursor position
+    inoremap <silent> <C-D> <C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR>
+    " To insert expr result, put expr into the register first!
+    inoremap <silent> <C-E> <C-R>=eval(@")<CR>
+    inoremap <Tab>f <C-X><C-F>|inoremap <Tab>o <C-X><C-O>
+    inoremap <Tab>l <C-X><C-L>|inoremap <Tab>s <C-X>s
+    inoremap <Tab>n <C-X><C-N>|inoremap <Tab>p <C-X><C-P>
+    inoremap <Tab>v <C-X><C-V>|inoremap <Tab>] <C-X><C-]>
+    if !has('nvim') && has('terminal')
+      nnoremap <leader>` <Cmd>terminal ++curwin<CR>
+      set termwinkey=<C-L>
+      tnoremap <C-L>p <Cmd>tabprevious<CR>
+    else
+      nnoremap <leader>` <Cmd>terminal<CR><Cmd>startinsert<CR>
+      tnoremap <C-L> <C-\>
+      tnoremap <C-L>N <C-\><C-N>
+    endif
+    " Hotkey CTRL-W is not as convenient as key mapping.
     nnoremap <leader>w <C-W>
     nnoremap <leader>q <Cmd>bdelete<CR>
     nnoremap <leader>p <Cmd>bprevious<CR>
@@ -501,49 +517,38 @@
     nnoremap <leader>F :Find!<space><space>
     nnoremap <leader>S :Start<space><space>
     nnoremap <leader>Q :Quick<space><space>
+    nnoremap <leader>M <Cmd>Red message<CR>
     nnoremap <Tab><Tab> <Cmd>tab split<CR>
     nnoremap <Tab>n <Cmd>tabnext<CR>
     nnoremap <Tab>p <Cmd>tabprevious<CR>
-    if !has('nvim') && has('terminal')
-      nnoremap <leader>` <Cmd>terminal ++curwin<CR> | set termwinkey=<C-L> | tnoremap <C-L>p <Cmd>tabprevious<CR>
-    else
-      nnoremap <leader>` <Cmd>terminal<CR><Cmd>startinsert<CR> | tnoremap <C-L> <C-\> | tnoremap <C-L>N <C-\><C-N>
-    endif
-    " Insert current time at the cursor position
-    inoremap <silent> <C-D> <C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR>
-    " To insert expr result, put expr into the register first!
-    inoremap <silent> <C-E> <C-R>=eval(@")<CR>
-    inoremap <Tab>f <C-X><C-F>|inoremap <Tab>o <C-X><C-O>|inoremap <Tab>l <C-X><C-L>|inoremap <Tab>s <C-X>s
-    inoremap <Tab>n <C-X><C-N>|inoremap <Tab>p <C-X><C-P>|inoremap <Tab>v <C-X><C-V>|inoremap <Tab>] <C-X><C-]>
-    nnoremap <silent> M <Cmd>Red message<CR>
-    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
-    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
     " Toggle boolean option, inverse the option of nowrap/nospell/nolist/nopaste
     nnoremap <silent> <leader>iw <Cmd>set wrap!<CR><Cmd>set wrap?<CR>
     nnoremap <silent> <leader>is <Cmd>set spell!<CR><Cmd>set spell?<CR>
     nnoremap <silent> <leader>il <Cmd>set list!<CR><Cmd>set list?<CR>
     nnoremap <silent> <leader>ip <Cmd>set paste!<CR><Cmd>set paste?<CR>
+    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
+    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
     nnoremap <expr> <C-H> '<C-W><'.v:count1 | nnoremap <expr> <C-L> '<C-W>>'.v:count1
     nnoremap <expr> <C-J> '<C-W>+'.v:count1 | nnoremap <expr> <C-K> '<C-W>-'.v:count1
     " Create stmt to get the key sequence which is a MACRO in the target register (example w).
     " After recording a macro with w, typing "w<leader>mm can create stmt to get this macro.
     " In future, you can get this macro by executing this stmt, and execute macro with @w
     nnoremap <leader>mm :<C-U><C-R><C-R>='let @'. v:register .' = '. string(getreg(v:register))<CR><C-F><LEFT>
+    nnoremap <leader>ll :let @*=expand('%:p:.').' ('.line('.').')'<CR>:echo '-=Relative Postion Copied=-'<CR>
     nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR> | nnoremap <leader>vd <Cmd>echo expand('%:p:h')<CR>
     nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
     nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
-    command! -bang -nargs=* Recent Red filter<bang> /<args>/ oldfiles    " Usage: Recent pattern
-    " Run vimscript line(s), line range area is allowed.
-    command! -range Run let lines=getline(<line1>,<line2>) | call execute(lines,'') | echo len(lines).' lines executed.'
-    " Execute the selected CLIs in Visual Mode with shell.
-    vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu nornu<CR>"vP:exec '%!'.&shell<CR>
-    " Start to run program or open a document/URL with its default program on windows
-    vnoremap <leader>W "vy:execute '!start' @v<CR> | nnoremap <leader>W :!start<space><space>
-    let &spf = MyVimrcDir().'/../tools.libs.scripts/scripts/spell.'.&encoding.'.add' | nnoremap <leader>vz :exec 'vs' &spf<CR>
-    nnoremap <leader>vs :exec 'vsplit' MyVimrcDir().'/../tools.libs.scripts/snippets.md'<CR>   " 选中沉淀，Run或<space><enter>
-    " Review comments in the project directory
+    nnoremap <leader>le <Cmd>Lexplore<CR>
     nnoremap <leader>vc :execute 'vsplit' ProjectDir().'/comments.md'<CR>
-    nnoremap <leader>ll :let @*=expand('%:p:.').' ('.line('.').')'<CR>:echo '-=Relative Postion Copied=-'<CR>
+    nnoremap <leader>vs :exec 'vsplit' MyVimrcDir().'/../tools.libs.scripts/snippets.md'<CR>   " 选中沉淀，Run或<space><enter>
+    let &spf = MyVimrcDir().'/../tools.libs.scripts/scripts/spell.'.&encoding.'.add' | nnoremap <leader>vz :exec 'vs' &spf<CR>
+    " Execute the visual selection as a shell command
+    vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu nornu<CR>"vP:exec '%!'.&shell<CR>
+    " Start program or open a document/URL with default program, which is alternative to command gx.
+    vnoremap <leader>W "vy:execute '!start' @v<CR> | nnoremap <leader>W :!start<space><space>
+    " Run vimscript lines or line ranges.
+    command! -range Run let lines=getline(<line1>,<line2>) | call execute(lines,'') | echo len(lines).' lines executed.'
+    command! -bang -nargs=* Recent Red filter<bang> /<args>/ oldfiles    " Usage: Recent pattern
     command! -range=% -nargs=* GitLog
           \ exec 'Start git --no-pager log -L '.<line1>.','.<line2>.':'.expand('%:p:.').' '.<q-args>
     command! -range=% -nargs=* GitBlame
@@ -564,7 +569,6 @@
     " Group of autocommands
     augroup VimRcAUs
       autocmd!
-      " Seek project directory when vim entered.
       autocmd VimEnter * if &buftype !=? 'terminal' && bufname() !~ "^\[A-Za-z0-9\]*://" | call ProjectDir() | endif
       " Restore cursor to file position in previous editing session.
       autocmd BufWinEnter * if line("'\"") <= line("$") | silent! normal! g`" | endif
@@ -604,21 +608,18 @@
       execute 'source '.PluginRcfile()
     endif
 
-    " Further: Let junegunn/vim-plug handle plugins? Def: CallVimPlugMgr
+    " Furthermore, manage plugins with junegunn/vim-plug. Call this function.
     silent function! CallVimPlugMgr()
-      if !filereadable(PackHome().'/plug.vim')
-        let uri = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-        call JobStart('downloading vim-plug', 'curl -vLs -o '.PackHome().'/plug.vim '.uri, PackHome())
-      else
-        if !filereadable(PluginRcfile())
-          let tmplst = [ 'exec ''source ''.PackHome().''/plug.vim''',
-                \ 'call plug#begin(PackHome())',
-                \ 'Plug ''tpope/vim-fugitive''',
-                \ 'Plug ''yegappan/lsp''',
-                \ 'call plug#end()',
-                \ '" INITIALIZATION OF PLUGINs']
-          call writefile(tmplst, PluginRcfile(), 'b')
-        endif
+      let uri = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+      call JobStart('downloading vim-plug', 'curl -vLs -o '.PackHome().'/plug.vim '.uri, PackHome())
+      if !filereadable(PluginRcfile())
+        let tmplst = [ 'exec ''source ''.PackHome().''/plug.vim''',
+              \ 'call plug#begin(PackHome())',
+              \ 'Plug ''tpope/vim-fugitive''',
+              \ 'Plug ''yegappan/lsp''',
+              \ 'call plug#end()',
+              \ '" INITIALIZATION OF PLUGINs']
+        call writefile(tmplst, PluginRcfile(), 'b')
       endif
     endfunction
     command! -nargs=0 -bar CallVimPlug call CallVimPlugMgr() | echo 'done.'

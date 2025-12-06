@@ -16,8 +16,8 @@ call plug#end()
 
 "
 " use optional plugin with packadd command
-"
-packadd! editorconfig
+" silently ignored in unsupported versions
+silent! packadd! editorconfig
 
 
 "
@@ -305,8 +305,8 @@ vim notes.
 9. <C-K/J/L/H>                 : resize window
 10. :Find/Find!/Finda          : search target file
 11. :Grep/Grep!/Grepa          : search target content; 'Grep content %' searchs content from current file
-12. :Run                       : run vimscript line(s), line range area is allowed.
-13. <space><enter>             : execute the selected CLIs in Visual Mode with shell.
+12. :Run                       : Run vimscript lines or line ranges.
+13. <space><enter>             : Execute the visual selection as a shell command
 14. <leader>ai                 : 呼出AIChat, nnoremap <leader>ai :AIChat <space <space>和vnoremap <leader>ai :AIChat<space><space>
 15. <leader>ed                 : 编辑或新建文件；文件fullpath可以来自Normal Mode光标下文件<cfile>或Visual Mode下选中的文件路径
 16. gf 或 gF                   : go to file under the cursor (file name is checked with &isfname option)
@@ -323,6 +323,11 @@ vim notes.
 27. gv"vy                      : yank previous selection (previous area in Visual Mode) with register v.
 28. :r !tree %:h               : 引用命令输出；外部命令tree输出当前文件所在目录下子目录（树形结构）
 29. :e %:p                     : type tab key to expand `%:p` to a full path
+30. :g或:global                : 对于满足pattern的行执行命令cmd，`:g/{pattern}/{cmd}`
+31. <leader>di                 : 查字典 nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
+32. M/H/L                      : 快速移动光标到窗口所显示内容的中部/头部/底部
+33. Rex或Rexplore              : 回到Explore窗口或从Explore窗口离开
+34. <leader>l或Lex或Lexplore   : 左侧展示Explore窗口；窗口内敲I隐藏banner,小i变换显示方式,小r是排序,小o新窗口打开文件,大O是Obtain远端文件,回车也是打开文件。
 
 
 Regexp in vim: Vim 有自己独特的正则语法风格，既不是 POSIX，也不是 PCRE。但它支持两种正则模式:
