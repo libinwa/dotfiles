@@ -19,6 +19,13 @@ call plug#end()
 " silently ignored in unsupported versions
 silent! packadd! editorconfig
 
+"
+" 查词典
+nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
+
+" shows tree view in netrw window
+let g:netrw_liststyle= 3
+
 
 "
 " colorscheme

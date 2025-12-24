@@ -3,6 +3,7 @@
 "- Description: This is the configuration file for vim
 "
 "  By copying this file to your `$HOME`, vim will then be configured.
+"  Folder 'tools.libs.scripts' 包含更多的沉淀。使用前需设置正确的路径。
 "
 "- History:
 "  2018-03-05 11:56:09 Created, 2025 updated.
@@ -173,28 +174,20 @@
       set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*
       set stl+=%#User2#%{GitBranch()!=#''?'\ '.GitBranch().'\ \|':''}%*
       set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%{->&bl&&empty(&bt)?'%t':'%f'}()%}\ %*
-      set stl+=%#User3#\ %*%#User9#%M%*%#User3#%n/%{BuffersListed()}%R%H%W%*
-      set stl+=%#User3#\ %{ReadableSize(wordcount().bytes)}\ \ %*
-      set stl+=%#User3#%=%{FencStr()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
-      set stl+=%#User4#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
-      set stl+=%#User5#\ %{winnr()}\ %*
+      set stl+=%#User2#\ %*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W%*
+      set stl+=%#User2#\ %{ReadableSize(wordcount().bytes)}\ \ %*
+      set stl+=%#User2#%=%{FencStr()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
+      set stl+=%#User2#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
+      set stl+=%#User3#\ %{winnr()}\ %*
     endif
 
     " Customizations of highlight
     silent function! SetHighlights()
-      " highlight groups for statusline customizations
-      hi! StatusLine cterm=NONE ctermbg=NONE ctermfg=255 gui=NONE guibg=NONE guifg=#FFFFFF
-      hi! StatusLineNC cterm=NONE ctermbg=NONE ctermfg=250 gui=NONE guibg=NONE guifg=#BCBCBC
-      hi! StatusLineTerm cterm=NONE ctermbg=NONE ctermfg=255 gui=NONE guibg=NONE guifg=#FFFFFF
-      hi! StatusLineTermNC cterm=NONE ctermbg=NONE ctermfg=250 gui=NONE guibg=NONE guifg=#BCBCBC
-      hi! User1 ctermbg=24 guibg=#264F78
-      hi! User2 ctermbg=238 guibg=#3A3D41
-      hi! User3 ctermbg=NONE guibg=NONE
-      hi! User4 ctermbg=238 guibg=#3A3D41
-      hi! User5 ctermbg=70 ctermfg=0 guibg=#6A9955 guifg=#000000
+      " highlight groups for StatusLine
+      hi! User1 ctermbg=24 guibg=#264F78 ctermfg=255 guifg=#FFFFFF
+      hi! User2 ctermbg=NONE guibg=NONE
+      hi! User3 ctermbg=70 ctermfg=0 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
-      " clear highlight of sign column. To use highlight, comment the following line.
-      hi! clear CursorLineSign | hi! clear SignColumn
       " transparent terminal. To disable it, comment the following if block
       if !has('gui_running')
         hi! Normal  guibg=NONE ctermbg=NONE
@@ -207,7 +200,7 @@
     " Group of autocommands for UI settings
     augroup setUi
       autocmd!
-      autocmd GUIEnter * simalt ~x    " 窗口启动时自动最大化
+      autocmd GUIEnter * if has('win32') || has('win64') | simalt ~x | endif   " 窗口启动时自动最大化
       autocmd VimEnter,ColorScheme * call SetHighlights()   " 自定义 highlight groups
       " Toggle line width 启用每行超过某一字符总数后给予字符变化提示（字体变蓝加下划线）
       autocmd BufWinEnter * if exists('w:line_width') && w:line_width
