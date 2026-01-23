@@ -10,6 +10,7 @@ Plug 'yegappan/lsp'
 "Plug 'girishji/devdocs.vim'
 "Plug 'diepm/vim-rest-console'
 Plug 'tomasiser/vim-code-dark'
+Plug 'dfxyz/CandyPaper.vim'
 "Plug 'madox2/vim-ai'
 call plug#end()
 " INITIALIZATION OF PLUGINs
@@ -24,7 +25,7 @@ silent! packadd! editorconfig
 nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
 
 " shows tree view in netrw window
-let g:netrw_liststyle= 3
+let g:netrw_liststyle=3
 
 
 "
@@ -335,6 +336,8 @@ vim notes.
 32. M/H/L                      : 快速移动光标到窗口所显示内容的中部/头部/底部
 33. Rex或Rexplore              : 回到Explore窗口或从Explore窗口离开
 34. <leader>l或Lex或Lexplore   : 左侧展示Explore窗口；窗口内敲I隐藏banner,小i变换显示方式,小r是排序,小o新窗口打开文件,大O是Obtain远端文件,回车也是打开文件。
+35. MOVE MOVE                  : 使用hijk或count +E/e/B/b移动光标靠近目标text object
+36. MOVE FAST  : f/F/t/T +目标字符或附近的容易字符快速到达目标或附近，然后hijk移动到目标；如果有重复字符导致f/F/t/T还没有靠近目标，则使用;/,重复上一次f/F/t/T以快速靠近目标。
 
 
 Regexp in vim: Vim 有自己独特的正则语法风格，既不是 POSIX，也不是 PCRE。但它支持两种正则模式:
@@ -499,9 +502,9 @@ help i_CTRL-X_s
 
 9. Jump with CTRL-o/CTRL-i, which is based on jumplist (see :jumps).
 
-`CTRL-o` jump to an older position, and `CTRL-i` brings you to a newer position. The mnemonic
-would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes
-going through a door, that is.
+`CTRL-o` jump to an older position, and `CTRL-i`(or <tab>) brings you to a newer position. The mnemonic
+would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes going through 
+a door, that is. NOTE: set jumpoptions+=stack to use stack-based jumps is better than classic one.
 
 10. Why does vim expand wildcards? I want disable it!
 

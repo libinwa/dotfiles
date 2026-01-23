@@ -75,10 +75,11 @@
     " 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
     nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 
-    " Enhanced diff configuration, silently ignored in unsupported versions (harmless)
+    " Enhanced configurations, silently ignored in unsupported versions (harmless)
     silent! set diffopt-=closeoff
     silent! set diffopt+=internal,indent-heuristic,vertical,hiddenoff,followwrap
     silent! set diffopt+=algorithm:patience               " Better algorithm for Vim 8.1+
+    silent! set jumpoptions+=stack                        " Better jumplist for Vim 9.0+
 
     " pastetoggle (sane indentation on pastes)
     silent! set pastetoggle=<F12>
@@ -174,8 +175,7 @@
       set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*
       set stl+=%#User2#%{GitBranch()!=#''?'\ '.GitBranch().'\ \|':''}%*
       set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%{->&bl&&empty(&bt)?'%t':'%f'}()%}\ %*
-      set stl+=%#User2#\ %*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W%*
-      set stl+=%#User2#\ %{ReadableSize(wordcount().bytes)}\ \ %*
+      set stl+=%#User2#\ %*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W\ %*
       set stl+=%#User2#%=%{FencStr()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
       set stl+=%#User2#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
       set stl+=%#User3#\ %{winnr()}\ %*
@@ -188,8 +188,7 @@
       hi! User2 ctermbg=NONE guibg=NONE
       hi! User3 ctermbg=70 ctermfg=0 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
-      " transparent terminal. To disable it, comment the following if block
-      if !has('gui_running')
+      if ( 0 )  " 0 is for disable transparent, using 1 to enable it
         hi! Normal  guibg=NONE ctermbg=NONE
         hi! LineNr  guibg=NONE ctermbg=NONE
         hi! NonText guibg=NONE ctermbg=NONE
@@ -252,15 +251,6 @@
           endif
         endfunction
         command! -range=% -nargs=0 Cfmt call ClangFormat(<line1>, <line2>)
-
-        function! ReadableSize(size)               " ---0------1-----2-----3--
-          let p = 0 | let l = a:size | let unit = ['Bytes', 'KB', 'MB', 'GB']
-          while l > 1024 | let l = l / 1024.0 | let p = p + 1 | endwhile
-          let readableSize = printf('%d %s', a:size, unit[0])
-          if p > 0 | let readableSize = printf('%d %s, %.2f %s', a:size, unit[0], l, unit[p]) | endif
-          return readableSize
-        endfunction
-        command! -bar -nargs=? -complete=file Size echo ReadableSize(getfsize(@%))
 
         " Sync files between local source and destination (ssh config is for remote).
         function! SyncFiles(src, dest)
@@ -511,9 +501,9 @@
     nnoremap <leader>S :Start<space><space>
     nnoremap <leader>Q :Quick<space><space>
     nnoremap <leader>M <Cmd>Red message<CR>
-    nnoremap <Tab><Tab> <Cmd>tab split<CR>
-    nnoremap <Tab>n <Cmd>tabnext<CR>
-    nnoremap <Tab>p <Cmd>tabprevious<CR>
+    nnoremap <leader>ts <Cmd>tab split<CR>
+    nnoremap <leader>tn <Cmd>tabnext<CR>
+    nnoremap <leader>tp <Cmd>tabprevious<CR>
     " Toggle boolean option, inverse the option of nowrap/nospell/nolist/nopaste
     nnoremap <silent> <leader>iw <Cmd>set wrap!<CR><Cmd>set wrap?<CR>
     nnoremap <silent> <leader>is <Cmd>set spell!<CR><Cmd>set spell?<CR>
