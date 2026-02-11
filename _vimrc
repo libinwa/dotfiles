@@ -17,20 +17,20 @@
       let &shell='"' . &shell . '"'
     endif
 
-    let g:mapleader = ','    " default leader: \
+    let g:mapleader = ' '     " Using space/comma is better than default \
     " Instead of using $MYVIMRC, add 'g:this_vimrc' to avoid path confused.
     let g:this_vimrc = get(g:, 'this_vimrc', resolve(expand('<sfile>:p')))
     silent! function! MyVimrcDir()
       return fnamemodify(g:this_vimrc, ':h')
     endfunction
 
-    filetype on                     " Detects file type
+    filetype on                     " Enable file type detection
     filetype plugin on
     filetype plugin indent on
 
-    set encoding=utf-8              " character encoding used inside vim.
-    scriptencoding utf-8            " when setting 'encoding', scriptencoding must be placed after that.
-    set fileencoding=utf-8          " when buffer 'fileencoding' is different from 'encoding', conversion will be done.
+    set encoding=utf-8              " Character encoding used inside vim.
+    scriptencoding utf-8    " when setting 'encoding', scriptencoding must be placed after that.
+    set fileencoding=utf-8  " when buffer 'fileencoding' is different from 'encoding', conversion will be done.
     set fileencodings=ucs-bom,utf-8,gbk,gb2312,gb18030,big5,cp936,latin1
 
     syntax enable                   " Enable syntax highlighting.
@@ -56,7 +56,7 @@
     set nospell                     " no spell checking
     set number                      " Line numbers on
     "set path+=**                    " 检索file_in_path时递归查找子目录, 递归就会拖慢
-    set relativenumber              " Line relative numbers on
+    "set relativenumber              " 有时候相对行号很好用
     set shiftwidth=2                " Use indents of 2 spaces
     set showmatch                   " Show matching brackets/parenthesis
     set smartcase                   " For the search pattern contains upper case characters.
@@ -73,7 +73,7 @@
     set nofoldenable                " 禁用折叠 `set foldenable` " 启用折叠
     set foldmethod=indent           " indent 折叠方式 `set foldmethod=marker` " marker 折叠方式
     " 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
-    nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+    nnoremap <space><space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 
     " Enhanced configurations, silently ignored in unsupported versions (harmless)
     silent! set diffopt-=closeoff
@@ -186,7 +186,7 @@
       " highlight groups for StatusLine
       hi! User1 ctermbg=24 guibg=#264F78 ctermfg=255 guifg=#FFFFFF
       hi! User2 ctermbg=NONE guibg=NONE
-      hi! User3 ctermbg=70 ctermfg=0 guibg=#6A9955 guifg=#FFFFFF
+      hi! User3 ctermbg=70 ctermfg=255 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
       if ( 0 )  " 0 is for disable transparent, using 1 to enable it
         hi! Normal  guibg=NONE ctermbg=NONE
@@ -252,41 +252,23 @@
         endfunction
         command! -range=% -nargs=0 Cfmt call ClangFormat(<line1>, <line2>)
 
-        " Sync files between local source and destination (ssh config is for remote).
-        function! SyncFiles(src, dest)
-          if a:src == '' | echohl ErrorMsg | echomsg printf('source cannot be empty.') | echohl NONE | endif
-          let host = '' | let source = a:src | let destination = a:dest | let tmpfmt = a:src.' %s'
-          if destination == ''
-            let choices='' | let i = 1 | let h = '' | let hosts=['NA']
-            echo 'Hosts:' | echo printf(' [%d] local', i) | call add(hosts, h) | let i+=1
-            let sshconfig = expand('$HOME/.ssh/config')
-            if filereadable(sshconfig)
-              let items = filter(readfile(sshconfig), 'v:val =~ "^Host\\s\\+"')
-              for h in items
-                let h = substitute(h, '^\s*Host\s\+\(.*\)\s*', '\1', 'g')
-                echo printf(' [%d] %s', i, h) | call add(hosts, h.':') | let i+=1
-              endfor
-            endif
-            let host = get(hosts, input("To:"), 'NA') | let tmpfmt = source.' '.host.'%s'
-            if host ==# 'NA' | let host = get(hosts, input("From:"), 'NA') | let tmpfmt = host.'%s '.source | endif
-            let destination = input("destination:")
-          endif
-          if host != 'NA' && destination != ''
-            if executable('rsync')
-              let cmd = printf('rsync -zahcvv --stats '.tmpfmt, destination)
-              let fltconfig = executable('rg')? get(glob('`rg --files | rg rsync_filter.txt`', 0, 1), 0, '')
-                    \: findfile('rsync_filter.txt', '**/*')  " Downward search
-              if fltconfig != '' | let cmd = cmd.' --filter="merge '.fltconfig.'"' | endif
-              call JobStart('SyncFiles[rsync]'.destination, cmd)
-            elseif executable('scp')
-              call JobStart('SyncFiles[scp]'.destination, printf("scp -Cprv ".tmpfmt, destination))
-            else
-              echohl ErrorMsg | echomsg printf('No executable sync tool.') | echohl NONE
-            endif
-          endif
+        function! Ripgrep(...)
+          exec 'Quick rg --vimgrep --no-heading --follow  --smart-case' join(a:000, ' ')
         endfunction
-        command! -bar -nargs=+ -complete=file Sync call SyncFiles(<f-args>)
-        command! -bar -nargs=+ -complete=file SyncI call SyncFiles(<q-args>, '')
+        command! -bang -nargs=* -complete=dir Grep call Ripgrep((<bang>0?'':'--max-depth=4'), <f-args>)
+        command!       -nargs=* -complete=dir Grepa call Ripgrep('-uuu', <f-args>)
+
+        " Find files with ripgrep
+        function! FindFiles(cmdopt_rgfiles, cmdopt_pattern='', cmdopt_path='', ...)
+          " &shell is required, because of pipe was used.
+          let cli = printf('%s %s "rg --files %s %s %s %s"', &shell, &shellcmdflag, a:cmdopt_rgfiles,
+                \join(a:000, ' '), (a:cmdopt_path!=''? shellescape(a:cmdopt_path) : ''),
+                \(a:cmdopt_pattern!=''?
+                \' | rg --no-heading --smart-case --sort path '.shellescape(a:cmdopt_pattern) : ''))
+          call JobStart(cli, cli, getcwd(), function('SetQfList', [{'efm':'%f'}]))
+        endfunction
+        command! -bang -nargs=* -complete=dir Find call FindFiles((<bang>0?'':'--max-depth=4'), <f-args>)
+        command!       -nargs=* -complete=dir Finda call FindFiles('--no-ignore --hidden', <f-args>)
 
         function! Redirect(...)
           let cmd = join(a:000, ' ')
@@ -494,6 +476,8 @@
     nnoremap <leader>n <Cmd>bnext<CR>
     nnoremap <leader>o <Cmd>b#<CR>
     nnoremap <leader>b <Cmd>Red ls<CR>
+    nnoremap <leader>x <Cmd>Lexplore<CR>
+    nnoremap <leader>X :Lexplore<space><space>
     nnoremap <leader>g <Cmd>Grep! <cword> .<CR>
     nnoremap <leader>f <Cmd>Find! <cword><CR>
     nnoremap <leader>G :Grep!<space><space>
@@ -521,7 +505,6 @@
     nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR> | nnoremap <leader>vd <Cmd>echo expand('%:p:h')<CR>
     nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
     nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
-    nnoremap <leader>le <Cmd>Lexplore<CR>
     nnoremap <leader>vc :execute 'vsplit' ProjectDir().'/comments.md'<CR>
     nnoremap <leader>vs :exec 'vsplit' MyVimrcDir().'/../tools.libs.scripts/snippets.md'<CR>   " 选中沉淀，Run或<space><enter>
     let &spf = MyVimrcDir().'/../tools.libs.scripts/scripts/spell.'.&encoding.'.add' | nnoremap <leader>vz :exec 'vs' &spf<CR>
@@ -536,17 +519,6 @@
           \ exec 'Start git --no-pager log -L '.<line1>.','.<line2>.':'.expand('%:p:.').' '.<q-args>
     command! -range=% -nargs=* GitBlame
           \ exec 'Start git --no-pager blame -L '.<line1>.','.<line2>.' -- '.expand('%:p:.').' '.<q-args>
-    function! RgFiles(cmdopt_rgfiles, cmdopt_pattern='', cmdopt_path='', ...)
-      let rgpattern = a:cmdopt_pattern!=''? ' | rg --no-heading --smart-case --sort path '.shellescape(a:cmdopt_pattern) : ''
-      let filespath = a:cmdopt_path!=''? ' '.shellescape(a:cmdopt_path) : ''
-      let cli = &shell.' '.&shellcmdflag.' "'.'rg --files '.a:cmdopt_rgfiles.' '.join(a:000, ' ').filespath.rgpattern.'"'
-      call JobStart(cli, cli, getcwd(), function('SetQfList', [{'efm':'%f'}]))
-    endfunction
-    command! -bang -nargs=* -complete=dir Find  call RgFiles((<bang>0?'':'--max-depth=4'), <f-args>)
-    command! -bang -nargs=* -complete=dir Grep
-          \ exec 'Quick rg '.(<bang>0?'':'--max-depth=4').' --vimgrep --no-heading --follow  --smart-case ' <q-args>
-    command! -nargs=* -complete=dir Grepa Grep! -uuu <args>
-    command! -nargs=* -complete=dir Finda call RgFiles('--no-ignore --hidden', <f-args>)
     command! -range -nargs=+ Fmt <line1>,<line2>s/\%V\w\+/\=printf(<q-args>, submatch(0))/g | noh  " Usage: Fmt %#x  Fmt %#d ...
 
     " Group of autocommands

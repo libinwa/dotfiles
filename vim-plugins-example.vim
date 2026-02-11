@@ -26,7 +26,7 @@ nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDV
 
 " shows tree view in netrw window
 let g:netrw_liststyle=3
-
+let g:netrw_keepdir=0
 
 "
 " colorscheme
@@ -118,7 +118,7 @@ colo codedark
       " To jump to the symbol definition using the vim tag-commands Ctrl-]
       if exists('+tagfunc') | setlocal tagfunc=lsp#lsp#TagFunc | endif
       "Switch between source and header files.
-      nnoremap <buffer> ,O :LspSwitchSourceHeader<CR>
+      nnoremap <buffer> gO :LspSwitchSourceHeader<CR>
       nnoremap <buffer> gD :LspGotoDeclaration<CR>
       nnoremap <buffer> gd :LspGotoDefinition<CR>
       nnoremap <buffer> gi :LspGotoImpl<CR>
@@ -155,6 +155,44 @@ colo codedark
 " http_proxy and https_proxy pointing to px (http://127.0.0.1:3128)
 "let $HTTP_PROXY="http://127.0.0.1:3128"
 "let $HTTPS_PROXY="http://127.0.0.1:3128"
+
+
+" Function: Copy files with extern tools
+" Sync files between local source and destination (ssh config is for remote).
+function! SyncFiles(src, dest)
+  if a:src == '' | echohl ErrorMsg | echomsg printf('source cannot be empty.') | echohl NONE | endif
+  let host = '' | let source = a:src | let destination = a:dest | let tmpfmt = a:src.' %s'
+  if destination == ''
+    let choices='' | let i = 1 | let h = '' | let hosts=['NA']
+    echo 'Hosts:' | echo printf(' [%d] local', i) | call add(hosts, h) | let i+=1
+    let sshconfig = expand('$HOME/.ssh/config')
+    if filereadable(sshconfig)
+      let items = filter(readfile(sshconfig), 'v:val =~ "^Host\\s\\+"')
+      for h in items
+        let h = substitute(h, '^\s*Host\s\+\(.*\)\s*', '\1', 'g')
+        echo printf(' [%d] %s', i, h) | call add(hosts, h.':') | let i+=1
+      endfor
+    endif
+    let host = get(hosts, input("To:"), 'NA') | let tmpfmt = source.' '.host.'%s'
+    if host ==# 'NA' | let host = get(hosts, input("From:"), 'NA') | let tmpfmt = host.'%s '.source | endif
+    let destination = input("destination:")
+  endif
+  if host != 'NA' && destination != ''
+    if executable('rsync')
+      let cmd = printf('rsync -zahcvv --stats '.tmpfmt, destination)
+      let fltconfig = executable('rg')? get(glob('`rg --files | rg rsync_filter.txt`', 0, 1), 0, '')
+            \: findfile('rsync_filter.txt', '**/*')  " Downward search
+      if fltconfig != '' | let cmd = cmd.' --filter="merge '.fltconfig.'"' | endif
+      call JobStart('SyncFiles[rsync]'.destination, cmd)
+    elseif executable('scp')
+      call JobStart('SyncFiles[scp]'.destination, printf("scp -Cprv ".tmpfmt, destination))
+    else
+      echohl ErrorMsg | echomsg printf('No executable sync tool.') | echohl NONE
+    endif
+  endif
+endfunction
+command! -bar -nargs=+ -complete=file Sync call SyncFiles(<f-args>)
+command! -bar -nargs=+ -complete=file SyncI call SyncFiles(<q-args>, '')
 
 
 
@@ -259,7 +297,7 @@ vim.lsp.config ('clangd',
         return { abbr = item.label:gsub('%b()', '') }
       end,
     })
-    vim.keymap.set('n', ',O', switch_source_header, {noremap=true, silent=true, buffer=bufnr})
+    vim.keymap.set('n', 'gO', switch_source_header, {noremap=true, silent=true, buffer=bufnr})
     vim.keymap.set('n', 'gS', symbol_info, {noremap=true, silent=true, buffer=bufnr})
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, {noremap=true, silent=true, buffer=bufnr})
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, {noremap=true, silent=true, buffer=bufnr})
@@ -503,7 +541,7 @@ help i_CTRL-X_s
 9. Jump with CTRL-o/CTRL-i, which is based on jumplist (see :jumps).
 
 `CTRL-o` jump to an older position, and `CTRL-i`(or <tab>) brings you to a newer position. The mnemonic
-would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes going through 
+would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes going through
 a door, that is. NOTE: set jumpoptions+=stack to use stack-based jumps is better than classic one.
 
 10. Why does vim expand wildcards? I want disable it!
@@ -541,4 +579,29 @@ Example:
 
 `:Red ol` and navigate to target file in the list, then type `gf` to open it! And an alternative way is
 `:browse ol`, which can list and allows to make a choice in the list file.
+
+14. What's the good practice browsing folder and files of my project?
+
+netrw: netrw重新打开是否可以保持上次打开时候导航到的folder？
+不能，但可以使用书签功能。netrw中敲击mb给当前folder设置书签b；下次打开netrw后按gb即可跳转到书签目录。
+
+>**Navigation** (https://vonheikemen.github.io/devlog/tools/using-netrw-vim-builtin-file-explorer/)
+> If we want to move between directories and files these are the keymaps we need to know:
+>
+>  1. Enter: Opens a directory or a file.
+>  2. -: Go up to the parent directory.
+>  3. u: Go back to the previous directory in the history.
+>  4. gb: Jump to the most recent directory saved on the "Bookmarks". To create a bookmark we use mb.
+>
+> Let's recap. If we want to "go down a directory" we use Enter. To "go up" we use -. To go back, u.
+> And if we want to "jump" quickly to a directory of our choosing we should first add it to the bookmarks (using mb) and then we can use gb to go there.
+>
+
+15. 为什么GitLog命令通过jobstart输出7万行到buffer(通过setbufline函数)需要53s？同样的脚本回调处理逻辑，为什么nvim输出7万行到buffer不足1s！
+
+实验和比对实现代码，根本原因是vim的channel是按行调用回调函数，nvim的channel是遇到eof或临时缓存满时调用一次回调函数。所以，实验发现同样的业务逻辑和回调数据量，vim中的回调的被调用了7万次，而nvim中被回调7次。
+vim repo: src\channel.c (2707)
+static void invoke_one_time_callback( channel_T   *channel, cbq_T          *cbhead, cbq_T             *item, typval_T    *argv)
+nvim repo: src\nvim\channel.c (730)
+void channel_reader_callbacks(Channel *chan, CallbackReader *reader)
 
