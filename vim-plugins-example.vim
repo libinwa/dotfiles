@@ -31,7 +31,10 @@ let g:netrw_keepdir=0
 "
 " colorscheme
 "
-colo codedark
+"colo codedark
+set background=light
+colo CandyPaper
+
 
 "
 " Settings Plug 'yegappan/lsp'
@@ -147,7 +150,7 @@ colo codedark
 "
 " local envs
 "
-"let $PATH = MyVimrcDir()."/../tools.libs.scripts/scripts;".$PATH    " Got env of my scripts
+"let $PATH = g:my_toolbox."/scripts;".$PATH    " Got env of my scripts
 "if isdirectory("C:/Program Files/Git/usr/bin") | let $PATH = $PATH.";C:/Program Files/Git/usr/bin" | endif       " for various tool at git home.
 "if isdirectory("C:\\Program Files\\Oracle\\VirtualBox") | let $PATH = $PATH.";C:\\Program Files\\Oracle\\VirtualBox" | endif
 "let $PATH = $PATH.';C:\\ProgramFiles\\llvm\\clang+llvm-20.1.4-x86_64-pc-windows-msvc\\bin'
@@ -533,6 +536,12 @@ help i_CTRL-X_s
   > To undo this action use zw, which comments out the line in the dictionary file. You can
   > also remove the entry by hand from the spell file (defined by :set spf?).
 
+  " Good practice:
+  if &spell
+    let &spf = 'path/to/spell.'.&encoding.'.add'
+    " Easy to open the word list file
+    nnoremap <leader>vz :exec 'vs' &spf<CR>
+  endif
 
 8. Quickfix: Using `:cdo` to execute command on every item in quickfix list.
 

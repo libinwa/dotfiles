@@ -3,7 +3,7 @@
 "- Description: This is the configuration file for vim
 "
 "  By copying this file to your `$HOME`, vim will then be configured.
-"  Folder 'tools.libs.scripts' 包含更多的沉淀。使用前需设置正确的路径。
+"  Toolbox 'tools.libs.scripts' 包含更多的沉淀。使用前需设置正确的路径。
 "
 "- History:
 "  2018-03-05 11:56:09 Created, 2025 updated.
@@ -20,17 +20,16 @@
     let g:mapleader = ' '     " Using space/comma is better than default \
     " Instead of using $MYVIMRC, add 'g:this_vimrc' to avoid path confused.
     let g:this_vimrc = get(g:, 'this_vimrc', resolve(expand('<sfile>:p')))
-    silent! function! MyVimrcDir()
-      return fnamemodify(g:this_vimrc, ':h')
-    endfunction
+    " Toolbox folder offers more practice-based resources.
+    let g:my_toolbox = simplify(fnamemodify(g:this_vimrc, ':h').'/../tools.libs.scripts/')
 
     filetype on                     " Enable file type detection
     filetype plugin on
     filetype plugin indent on
 
-    set encoding=utf-8              " Character encoding used inside vim.
-    scriptencoding utf-8    " when setting 'encoding', scriptencoding must be placed after that.
-    set fileencoding=utf-8  " when buffer 'fileencoding' is different from 'encoding', conversion will be done.
+    set encoding=utf-8      " character encoding used inside vim.
+    scriptencoding utf-8    " when setting 'encoding' option, 'scriptencoding' must be placed after that.
+    set fileencoding=utf-8  " when buffer 'fileencoding' is diff from 'encoding', conversion will be done.
     set fileencodings=ucs-bom,utf-8,gbk,gb2312,gb18030,big5,cp936,latin1
 
     syntax enable                   " Enable syntax highlighting.
@@ -78,8 +77,10 @@
     " Enhanced configurations, silently ignored in unsupported versions (harmless)
     silent! set diffopt-=closeoff
     silent! set diffopt+=internal,indent-heuristic,vertical,hiddenoff,followwrap
-    silent! set diffopt+=algorithm:patience               " Better algorithm for Vim 8.1+
-    silent! set jumpoptions+=stack                        " Better jumplist for Vim 9.0+
+    silent! set diffopt+=algorithm:patience         " Better algorithm for Vim 8.1+
+    silent! set diffopt+=linematch:60               " Vim 9.2+
+    silent! set jumpoptions+=stack                  " Better jumplist for Vim 9.0+
+    silent! set completeopt+=fuzzy,nearest,nosort   " Vim 9.2+
 
     " pastetoggle (sane indentation on pastes)
     silent! set pastetoggle=<F12>
@@ -114,15 +115,14 @@
       set grepprg=rg\ --vimgrep\ --no-heading\ --follow\ --smart-case
     endif
 
-    "set backup                      " Backups are nice ...
-    set nobackup                    " 设置无备份文件
+    set nobackup                    " Backups are nice ... 设置无备份文件
     set writebackup                 " 保存文件前建立备份，保存成功后删除该备份
     set noswapfile                  " 设置无临时文件
     if has('persistent_undo')       " Check and enable persistent_undo
       set undofile                          " Saves undo history to undo file when writing a buffer
       set undolevels=1000                   " Maximum number of changes that can be undone
       set undoreload=10000                  " Maximum number lines to save for undo on a buffer reload
-      let uDir = MyVimrcDir().'/.vim/undo'  " Put undofile in the unified directory
+      let uDir = fnamemodify(g:this_vimrc, ':h').'/.vim/undo'  " Put undofile in the unified directory
       if !isdirectory(uDir) && exists('*mkdir')
         call mkdir(uDir, 'p', 0o700)
       endif
@@ -188,7 +188,7 @@
       hi! User2 ctermbg=NONE guibg=NONE
       hi! User3 ctermbg=70 ctermfg=255 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
-      if ( 0 )  " 0 is for disable transparent, using 1 to enable it
+      if ( 0 )  " 0 is for disable transparent bg, using 1 to enable
         hi! Normal  guibg=NONE ctermbg=NONE
         hi! LineNr  guibg=NONE ctermbg=NONE
         hi! NonText guibg=NONE ctermbg=NONE
@@ -201,14 +201,6 @@
       autocmd!
       autocmd GUIEnter * if has('win32') || has('win64') | simalt ~x | endif   " 窗口启动时自动最大化
       autocmd VimEnter,ColorScheme * call SetHighlights()   " 自定义 highlight groups
-      " Toggle line width 启用每行超过某一字符总数后给予字符变化提示（字体变蓝加下划线）
-      autocmd BufWinEnter * if exists('w:line_width') && w:line_width
-            \|   let w:m2 = matchadd('Underlined', printf('\%%>%dv.\+', 120), -1)
-            \| elseif exists('w:m2') && w:m2 != -1
-            \|   call matchdelete(w:m2) | let w:m2 = -1
-            \| endif
-      nnoremap <silent><leader>lw :let w:line_width = !(exists('w:line_width') && w:line_width)<CR>
-            \:doautocmd setUi BufWinEnter<CR>
     augroup END
 
     if has('gui_running')
@@ -497,21 +489,20 @@
     nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
     nnoremap <expr> <C-H> '<C-W><'.v:count1 | nnoremap <expr> <C-L> '<C-W>>'.v:count1
     nnoremap <expr> <C-J> '<C-W>+'.v:count1 | nnoremap <expr> <C-K> '<C-W>-'.v:count1
+    " Start program or open a doc/URL with default program, which is alternative to command gx.
+    nnoremap <leader>W :!start<space><space> | vnoremap <leader>W "vy:execute '!start' @v<CR>
     " Create stmt to get the key sequence which is a MACRO in the target register (example w).
     " After recording a macro with w, typing "w<leader>mm can create stmt to get this macro.
     " In future, you can get this macro by executing this stmt, and execute macro with @w
     nnoremap <leader>mm :<C-U><C-R><C-R>='let @'. v:register .' = '. string(getreg(v:register))<CR><C-F><LEFT>
     nnoremap <leader>ll :let @*=expand('%:p:.').' ('.line('.').')'<CR>:echo '-=Relative Postion Copied=-'<CR>
-    nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR> | nnoremap <leader>vd <Cmd>echo expand('%:p:h')<CR>
-    nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
+    nnoremap <leader>vd <Cmd>let @*=expand('%:p')<CR><Cmd>echo @*<CR>
+    nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR>
     nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
-    nnoremap <leader>vc :execute 'vsplit' ProjectDir().'/comments.md'<CR>
-    nnoremap <leader>vs :exec 'vsplit' MyVimrcDir().'/../tools.libs.scripts/snippets.md'<CR>   " 选中沉淀，Run或<space><enter>
-    let &spf = MyVimrcDir().'/../tools.libs.scripts/scripts/spell.'.&encoding.'.add' | nnoremap <leader>vz :exec 'vs' &spf<CR>
+    nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
+    nnoremap <leader>vs :exec 'vsplit' g:my_toolbox.'/snippets.md'<CR>      " 选中沉淀，Run或<space><enter>
     " Execute the visual selection as a shell command
     vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu nornu<CR>"vP:exec '%!'.&shell<CR>
-    " Start program or open a document/URL with default program, which is alternative to command gx.
-    vnoremap <leader>W "vy:execute '!start' @v<CR> | nnoremap <leader>W :!start<space><space>
     " Run vimscript lines or line ranges.
     command! -range Run let lines=getline(<line1>,<line2>) | call execute(lines,'') | echo len(lines).' lines executed.'
     command! -bang -nargs=* Recent Red filter<bang> /<args>/ oldfiles    " Usage: Recent pattern
@@ -519,7 +510,7 @@
           \ exec 'Start git --no-pager log -L '.<line1>.','.<line2>.':'.expand('%:p:.').' '.<q-args>
     command! -range=% -nargs=* GitBlame
           \ exec 'Start git --no-pager blame -L '.<line1>.','.<line2>.' -- '.expand('%:p:.').' '.<q-args>
-    command! -range -nargs=+ Fmt <line1>,<line2>s/\%V\w\+/\=printf(<q-args>, submatch(0))/g | noh  " Usage: Fmt %#x  Fmt %#d ...
+    command! -range -nargs=+ Fmt <line1>,<line2>s/\%V\w\+/\=printf(<q-args>,submatch(0))/g | noh  " Usage: Fmt %#x  Fmt %#d ...
 
     " Group of autocommands
     augroup VimRcAUs
@@ -545,7 +536,7 @@
 
 " For Plugins {
     silent function! PackHome()
-      return MyVimrcDir().'/.vim/plugged'
+      return fnamemodify(g:this_vimrc, ':h').'/.vim/plugged'
     endfunction
     " For scanning plugins under `pack/*/start` or `pack/*/opt` in packages home directory,
     " add packages home directory to the search path.
@@ -555,26 +546,22 @@
     endif
     " Plugins under `pack/*/opt` are not loaded; It is recommended to use `packadd` commands
     " in specific script file to run command. The following lines allows easy access.
-    function! PluginRcfile()
-      return MyVimrcDir().'/../tools.libs.scripts/vim-plugins.vim'
-    endfunction
-    nnoremap <leader>vp :execute 'vsplit' PluginRcfile()<CR>
-    if filereadable(PluginRcfile())
-      execute 'source '.PluginRcfile()
-    endif
+    nnoremap <leader>vp :execute 'vsplit' g:my_toolbox.'/vim-plugins.vim'<CR>
+    " Execute the specific configurations, silently ignored if it doesn't exists (harmless)
+    silent! execute 'source '.g:my_toolbox.'/vim-plugins.vim'
 
     " Furthermore, manage plugins with junegunn/vim-plug. Call this function.
     silent function! CallVimPlugMgr()
       let uri = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
       call JobStart('downloading vim-plug', 'curl -vLs -o '.PackHome().'/plug.vim '.uri, PackHome())
-      if !filereadable(PluginRcfile())
+      if !filereadable(g:my_toolbox.'/vim-plugins.vim')
         let tmplst = [ 'exec ''source ''.PackHome().''/plug.vim''',
               \ 'call plug#begin(PackHome())',
               \ 'Plug ''tpope/vim-fugitive''',
               \ 'Plug ''yegappan/lsp''',
               \ 'call plug#end()',
               \ '" INITIALIZATION OF PLUGINs']
-        call writefile(tmplst, PluginRcfile(), 'b')
+        call writefile(tmplst, g:my_toolbox.'/vim-plugins.vim', 'b')
       endif
     endfunction
     command! -nargs=0 -bar CallVimPlug call CallVimPlugMgr() | echo 'done.'
