@@ -47,6 +47,8 @@
     set iskeyword-=#                " '#' is an end of word designator
     set iskeyword-=-                " '-' is an end of word designator
     set iskeyword-=.                " '.' is an end of word designator
+    set list                        " 打开并设置非可见字符的显示时的可见字符替代方案 (listchars)
+    set listchars=tab:›\ ,trail:•,extends:>,precedes:<,nbsp:.
     set matchpairs+=<:>             " Match, to be used with %
     set mouse=a                     " Enable mouse usage
     set mousehide                   " Hide the mouse cursor while typing
@@ -66,8 +68,8 @@
     "set vb t_vb=                    " 关闭提示音
     set viewoptions=folds,options,cursor,unix,slash    " Better Unix / Windows compatibility
     set virtualedit=onemore         " Allow for cursor beyond last character
-    set wildmenu                    " Show list instead of just completing
-    set wildmode=list:longest,full  " Command <Tab> completion, list matches, then longest common part, then all.
+    set wildmenu                    " cmdline-completion show list instead of just completing
+    set wildmode=list:longest,full  " cmdline-completion behavior
 
     set nofoldenable                " 禁用折叠 `set foldenable` " 启用折叠
     set foldmethod=indent           " indent 折叠方式 `set foldmethod=marker` " marker 折叠方式
@@ -75,26 +77,18 @@
     nnoremap <space><space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 
     " Enhanced configurations, silently ignored in unsupported versions (harmless)
-    silent! set diffopt-=closeoff
-    silent! set diffopt+=internal,indent-heuristic,vertical,hiddenoff,followwrap
-    silent! set diffopt+=algorithm:patience         " Better algorithm for Vim 8.1+
-    silent! set diffopt+=linematch:60               " Vim 9.2+
-    silent! set jumpoptions+=stack                  " Better jumplist for Vim 9.0+
-    silent! set completeopt+=fuzzy,nearest,nosort   " Vim 9.2+
+    silent! set diffopt=internal,filler,context:4,vertical,hiddenoff,followwrap         " `closeoff` is excluded.
+    silent! set diffopt+=indent-heuristic,algorithm:patience   " Better algorithm for Vim 8.x
+    silent! set diffopt+=inline:char,linematch:60              " Vim 9.2+
+    silent! set jumpoptions+=stack                             " Better jumplist for Vim 9.0+
+    silent! set completeopt+=nearest
+    "silent! set completeopt+=fuzzy,nosort       " Vim 9.2+, conflict with 3rd-party completion result
 
     " pastetoggle (sane indentation on pastes)
     silent! set pastetoggle=<F12>
     if has('clipboard')
       silent! set clipboard=unnamed
       silent! set clipboard+=unnamedplus     " When possible use + register for copy-paste
-    endif
-
-    " 非可见字符不显示, `set list`可按预定字符(listchars指定)替代显示非可见字符
-    set list
-    " 设置非可见字符的显示时的可见字符替代方案
-    set listchars=tab:›\ ,trail:•,extends:>,precedes:<,nbsp:.
-    if &encoding !=? 'utf-8'
-      echohl WarningMsg | echomsg 'encoding' &encoding 'might cause invalid listchars display' | echohl NONE
     endif
 
     " Jumping with tags:
@@ -159,24 +153,27 @@
       silent function! CurrentMode(m=mode())
         return get(g:theModes, a:m, a:m)
       endfunction
-      silent function! FencStr()
-        let fencStr = empty(&fenc) ? &enc : &fenc
-        let bombStr = (exists('+bomb') && &bomb) ? ' with BOM' : ''
-        return fencStr.bombStr
+      silent function! GitBranch()
+        let branch = exists('*FugitiveHead')? FugitiveHead() : ''
+        return empty(branch)? '' : ' '.branch.' |'
       endfunction
       silent function! BuffersListed()
-        return len(getbufinfo({'buflisted':1}))
+        return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
       endfunction
-      silent function! GitBranch()
-        return exists('*FugitiveHead')? FugitiveHead() : ''
+      silent function! Stl_filename()
+        return (&bl && empty(&bt))? '%t' : '%f'
+      endfunction
+      silent function! Stl_fileencoding()
+        let fenc = empty(&fenc) ? &enc : &fenc
+        let bomb = (exists('+bomb') && &bomb) ? ' with BOM' : ''
+        return fenc.bomb
       endfunction
       " Broken down into includeable segments, settings after %= is for right side
       " Highlight the bottom-right winnr for easy navigation with winnr+ <CTRL-W>w
-      set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*
-      set stl+=%#User2#%{GitBranch()!=#''?'\ '.GitBranch().'\ \|':''}%*
-      set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%{->&bl&&empty(&bt)?'%t':'%f'}()%}\ %*
-      set stl+=%#User2#\ %*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W\ %*
-      set stl+=%#User2#%=%{FencStr()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
+      set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*%#User2#%{GitBranch()}%*
+      set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%Stl_filename()%}\ %*
+      set stl+=%#User2#\ %1*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W\ %*
+      set stl+=%#User2#%=%{Stl_fileencoding()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
       set stl+=%#User2#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
       set stl+=%#User3#\ %{winnr()}\ %*
     endif
@@ -346,7 +343,7 @@
 
     " Job control {
         silent function! JobCallback(jid, cwd, cb, event, channel, data, streamname='')
-          if !empty(a:cb) && type(a:cb) ==? type(function("tr"))
+          if type(a:cb) ==? v:t_func
             call a:cb(a:jid, a:cwd, a:event, a:channel, a:data)
           else
             let l:job = a:channel | if exists('*ch_getjob') | let l:job = ch_getjob(a:channel) | endif
@@ -361,7 +358,7 @@
             endif
             if !empty(a:data) | call setbufvar(l:buf, '&ma', 1) | call setbufline(l:buf, line('$')+1, a:data) | endif
             call setbufvar(l:buf, 'job', l:job) | call setbufvar(l:buf, '&mod', 0) | call setbufvar(l:buf, '&ma', 0)
-            if getbufvar(l:buf, 'ss') != 0 | call win_gotoid(l:wid) | call cursor('$', 0) | endif
+            if l:wid == win_getid() && getbufvar(l:buf, 'ss') != 0 | call cursor('$', 0) | endif
             if a:event ==? 'exit'
               let l:stl_title = getbufvar(l:buf, 'stl_title') | call setbufvar(l:buf, 'stl_title', '*'.l:stl_title)
             endif
@@ -421,11 +418,11 @@
             let l:qflstid = getqflist({'id':0}).id | let l:m = {l:qflstid : {'chn': a:channel}, a:jid : {'id': l:qflstid}}
             call setbufvar(getqflist({'qfbufnr':0}).qfbufnr, 'job', (type(l:job) != type({})? l:m : extend(l:job, l:m)))
           else
-            if type(l:job) ==? type({}) && has_key(l:job, a:jid)
+            if type(l:job) ==? v:t_dict && has_key(l:job, a:jid)
               if a:event ==? 'exit'
                 cclose | call setqflist([], 'a', {'id': l:job[a:jid].id, 'title': '*'.a:jid}) | copen
               else
-                let lines = a:data | if type(a:data) != type([]) | let lines = [a:data] | endif
+                let lines = a:data | if type(a:data) != v:t_list | let lines = [a:data] | endif
                 call setqflist([], 'a', {'id': l:job[a:jid].id, 'lines': lines}->extend(a:qfopts))
               endif
             endif
