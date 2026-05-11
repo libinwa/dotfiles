@@ -343,9 +343,9 @@ vim notes.
 ## Practice and Tips
 
 0. jk                          : Escape from Insert Mode
-1. <leader>w                   : 敲CTRL-W太费指头, mapping for wincmd is nice. 例如<leader>wL可以move window right
-2. !start .                    : Windows Explorer中打开当前工作目录；用<leader>W可以给出!start然后手动敲入待执行命令
-3. !start % 或 !start /B %     : 用Windows上默认应用程序打开当前文件；Visual Mode下选中目标文件敲<leader>W打开；
+1. <leader>w                   : 敲CTRL-W太费指头, mapping for wincmd is nice. 例如敲 <leader>wL 就能 Move window right
+2. Launch .                    : Windows Explorer中打开当前工作目录（linux也适用）
+3. Launch %或!start %          : 用Windows上默认应用程序（!start /B %）打开当前文件；Visual Mode下选中目标文件敲 gx 打开 (linux也适用gx)
 4. :cd %:h                     : 切到当前文件所在目录，用<leader>cd更容易；CD %:h切换ProiectDir为当前文件目录；
 5. :CD!                        : Seek ProjectDir that contains current file; CD切换当前目录到ProjectDir；
 6. :on                         : Command would close all windows but the current one, see ":h only"
@@ -355,9 +355,9 @@ vim notes.
 10. :Find/Find!/Finda          : search target file
 11. :Grep/Grep!/Grepa          : search target content; 'Grep content %' searchs content from current file
 12. :Run                       : Run vimscript lines or line ranges.
-13. <space><enter>             : Execute the visual selection as a shell command
-14. <leader>ai                 : 呼出AIChat, nnoremap <leader>ai :AIChat <space <space>和vnoremap <leader>ai :AIChat<space><space>
-15. <leader>ed                 : 编辑或新建文件；文件fullpath可以来自Normal Mode光标下文件<cfile>或Visual Mode下选中的文件路径
+13. <space><enter>             : Execute the visual selection (Visual Mode) as a shell command
+14. <leader>ai                 : 呼出AIChat, nnoremap <leader>ai :AIChat <space> <space>和vnoremap <leader>ai :AIChat<space><space>
+15. :edit <C-R><C-F>           : 编辑或新建文件；文件fullpath可以来自<C-R><C-F>（光标下textobject）给出的文件路径；<C-R><C-F>也可以获取netrw中光标下路径
 16. gf 或 gF                   : go to file under the cursor (file name is checked with &isfname option)
 17. :Red ol 或 :Recent         : Red重定向Command输出到窗口；组合Red ol列出recent files之后进一步搜索目标文件，敲入gf就可以打开；
 18. <leader>gb                 : 根据光标下<cWORD>(通常是ls命令列出的buffer number)显示buffer到当前window；
@@ -371,14 +371,16 @@ vim notes.
 26. <C-E>                      : under Insert Mode, eval expr in register (@") and put result at cursor position
 27. gv"vy                      : yank previous selection (previous area in Visual Mode) with register v.
 28. :r !tree %:h               : 引用命令输出；外部命令tree输出当前文件所在目录下子目录（树形结构）
-29. :e %:p                     : type tab key to expand `%:p` to a full path
+29. :e %:p 或 :edit %:p        : type <tab> key to expand `%:p` to a full path
 30. :g或:global                : 对于满足pattern的行执行命令cmd，`:g/{pattern}/{cmd}`
 31. <leader>di                 : 查字典 nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
 32. M/H/L                      : 快速移动光标到窗口所显示内容的中部/头部/底部
-33. Rex或Rexplore              : 回到Explore窗口或从Explore窗口离开
-34. <leader>l或Lex或Lexplore   : 左侧展示Explore窗口；窗口内敲I隐藏banner,小i变换显示方式,小r是排序,小o新窗口打开文件,大O是Obtain远端文件,回车也是打开文件。
+33. <leader>x或:Rexplore       : 回到Explore目录netrw窗口或从Explore目录netrw窗口离开
+34. <leader>X或直接敲:Lexplore : 左侧展示Explore窗口；窗口(netrw)内敲I隐藏banner,小i变换显示方式,小r是排序,小o新窗口打开文件,大O是Obtain远端文件,回车也是打开文件。
 35. MOVE MOVE                  : 使用hijk或count +E/e/B/b移动光标靠近目标text object
 36. MOVE FAST  : f/F/t/T +目标字符或附近的容易字符快速到达目标或附近，然后hijk移动到目标；如果有重复字符导致f/F/t/T还没有靠近目标，则使用;/,重复上一次f/F/t/T以快速靠近目标。
+37. y.         : yank full path of file in current buffer, and full path of file under the cursor in netrw window
+38. za         : 常规模式下敲zi键来开关光标行所在行的折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
 
 
 Regexp in vim: Vim 有自己独特的正则语法风格，既不是 POSIX，也不是 PCRE。但它支持两种正则模式:

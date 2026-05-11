@@ -23,45 +23,40 @@
     " Toolbox folder offers more practice-based resources.
     let g:my_toolbox = simplify(fnamemodify(g:this_vimrc, ':h').'/../tools.libs.scripts/')
 
-    filetype on                     " Enable file type detection
-    filetype plugin on
-    filetype plugin indent on
-
-    set encoding=utf-8      " character encoding used inside vim.
-    scriptencoding utf-8    " when setting 'encoding' option, 'scriptencoding' must be placed after that.
-    set fileencoding=utf-8  " when buffer 'fileencoding' is diff from 'encoding', conversion will be done.
-    set fileencodings=ucs-bom,utf-8,gbk,gb2312,gb18030,big5,cp936,latin1
-
+    filetype plugin indent on       " Enable filetype detection.
     syntax enable                   " Enable syntax highlighting.
-
-    set shortmess+=filmnrxoOatTI    " 保留欢迎界面? set shortmess-=I
-    set autoindent                  " Indent at the same level of the previous line
+    set encoding=utf-8              " Character encoding used inside vim.
+    " when reading file, tries to use the first mentioned encoding in list
+    set fileencodings=ucs-bom,utf-8,gbk,gb18030,latin1
+    set shortmess+=aIcF             " 保留欢迎界面? set shortmess-=I
     set autoread                    " 当文件在外部被修改，自动更新该文件
+    set autoindent                  " Indent at the same level of the previous line
+    set smartindent                 " Enable smart indent
     set backspace=indent,eol,start  " Backspace for dummies
     set expandtab                   " Tabs are spaces, not tabs
     set hidden                      " Allow buffer switching without saving
     set history=1000                " Store a ton of history (default is 20)
     set hlsearch                    " Highlight search terms
     set ignorecase                  " Case insensitive search
-    set incsearch                   " `set noincsearch` " 在输入要搜索的文字时，取消实时匹配
+    set incsearch                   " `set noincsearch` 在输入要搜索的文字时，取消实时匹配
     set iskeyword-=#                " '#' is an end of word designator
     set iskeyword-=-                " '-' is an end of word designator
     set iskeyword-=.                " '.' is an end of word designator
-    set list                        " 打开并设置非可见字符的显示时的可见字符替代方案 (listchars)
+    set list                        " 显示非可见字符，设置非可见字符的可见字符替代方案 (listchars)
     set listchars=tab:›\ ,trail:•,extends:>,precedes:<,nbsp:.
     set matchpairs+=<:>             " Match, to be used with %
     set mouse=a                     " Enable mouse usage
     set mousehide                   " Hide the mouse cursor while typing
-    set nojoinspaces                " Prevents inserting two spaces after punctuation on a join (J)
+    set nojoinspaces                " Prevents inserting spaces after punctuation on a join (J)
     set nowrap                      " no wrap for long line
-    set nospell                     " no spell checking
+    set nofoldenable                " 打开时不折叠
+    set foldmethod=indent           " 折叠方式 `set foldmethod=marker` " marker 折叠方式
     set number                      " Line numbers on
-    "set path+=**                    " 检索file_in_path时递归查找子目录, 递归就会拖慢
     "set relativenumber              " 有时候相对行号很好用
+    "set path+=**                    " 检索file_in_path时递归查找子目录, 递归就会拖慢
     set shiftwidth=2                " Use indents of 2 spaces
     set showmatch                   " Show matching brackets/parenthesis
     set smartcase                   " For the search pattern contains upper case characters.
-    set smartindent                 " Enable smart indent
     set smarttab                    " 指定按一次backspace就删除shiftwidth宽度
     set softtabstop=2               " Let backspace delete indent
     set tabstop=2                   " An indentation every 2 columns
@@ -71,18 +66,13 @@
     set wildmenu                    " cmdline-completion show list instead of just completing
     set wildmode=list:longest,full  " cmdline-completion behavior
 
-    set nofoldenable                " 禁用折叠 `set foldenable` " 启用折叠
-    set foldmethod=indent           " indent 折叠方式 `set foldmethod=marker` " marker 折叠方式
-    " 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
-    nnoremap <space><space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
-
     " Enhanced configurations, silently ignored in unsupported versions (harmless)
-    silent! set diffopt=internal,filler,context:4,vertical,hiddenoff,followwrap         " `closeoff` is excluded.
+    silent! set diffopt=internal,filler,context:4,vertical,hiddenoff,followwrap  " closeoff excluded.
     silent! set diffopt+=indent-heuristic,algorithm:patience   " Better algorithm for Vim 8.x
     silent! set diffopt+=inline:char,linematch:60              " Vim 9.2+
     silent! set jumpoptions+=stack                             " Better jumplist for Vim 9.0+
     silent! set completeopt+=nearest
-    "silent! set completeopt+=fuzzy,nosort       " Vim 9.2+, conflict with 3rd-party completion result
+    "silent! set completeopt+=fuzzy,nosort     " Vim 9.2+, conflict with 3rd-party completion result
 
     " pastetoggle (sane indentation on pastes)
     silent! set pastetoggle=<F12>
@@ -126,28 +116,25 @@
 
 
 " UI Settings {
-    set background=dark             " Set background, toggle between dark and light
+    set background=dark           " Set background, toggle between dark and light
     nnoremap <silent> <leader>tb <Cmd>if &bg ==? "dark"<Bar>set bg=light<Bar>else<Bar>set bg=dark<Bar>endif<CR>
-    set winminheight=0              " Windows can be 0 line high
-    set splitright                  " Puts new vsplit windows to the right of the current
-    set splitbelow                  " Puts new split windows to the bottom of the current
-    set fillchars=vert:\ ,fold:-    " Sets characters to fill the statuslines and vertical separators.
-    "set t_Co=256                    " 8-bit color (256 colors) makes xterm/win32 vim shine
-    set termguicolors               " Using guibg/fg attributes in terminal, true color(24-bit color) is required.
-    set cursorline                  " Highlight current line
-    set scrolljump=5                " Lines to scroll when cursor leaves screen
-    set scrolloff=3                 " Minimum screen lines to keep above and below cursor
+    set winminheight=0            " Windows can be 0 line high
+    set splitright                " Puts new vsplit windows to the right of the current
+    set splitbelow                " Puts new split windows to the bottom of the current
+    set fillchars=vert:\ ,fold:-  " Sets characters to fill the statuslines and vertical separators.
+    "set t_Co=256                  " 8-bit color (256 colors) makes xterm/win32 vim shine
+    set termguicolors             " Using guibg/fg attributes in terminal, true color(24-bit color) is required.
+    set cursorline                " Highlight current line
+    set scrolljump=5              " Lines to scroll when cursor leaves screen
+    set scrolloff=3               " Minimum screen lines to keep above and below cursor
+    set cmdheight=2               " Set the command line height as 2，default is 1
+    set showcmd                   " show cmd/selected chars(lines) in visual mode in the last line
+    set ruler                     " Show the line and column number of the cursor position
+    set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)        " a ruler format on steroids
 
-    set cmdheight=2                 " Set the command line height as 2，default is 1
-    if has('cmdline_info')
-      set ruler                     " Show the line and column number of the cursor position
-      set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)       " a ruler on steroids
-      set showcmd    " show command and selected chars/lines in visual mode in the last line
-    endif
-
-    if has('statusline')            " Add functions for statusline customizations
-      set laststatus=2              " Set status line on
-      set noshowmode                " Don't display the current mode
+    if has('statusline')          " Add functions for statusline customizations
+      set laststatus=2            " Set status line on
+      set noshowmode              " Don't display the current mode
       let g:theModes={'n':'NORMAL', 'v':'VISUAL', 'V':'V·LINE', "\<C-V>":'V·BLOCK',
             \'i':'INSERT', 'R':'REPLACE', 'c':'COMMAND', '!':'SHELL', 't':'TERMINAL'}
       silent function! CurrentMode(m=mode())
@@ -294,6 +281,18 @@
         endfunction
         nnoremap <silent> Q :call ToggleQuickfix()<CR>
 
+        function! NetrwGetWordPath() abort
+          let w=netrw#Call('NetrwGetWord')
+          let p=b:netrw_curdir.'/'
+          if (w:netrw_liststyle==3)
+            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), w.'$', '', '')
+          endif
+          return p.w
+        endfunction
+        autocmd FileType netrw nnoremap <buffer> y. <Cmd>call setreg(v:register,NetrwGetWordPath())<Bar>echo getreg(v:register)<CR>
+        autocmd FileType netrw cnoremap <buffer><expr> <Plug><cfile> NetrwGetWordPath()->({p->empty(p)?"\022\006":p})()
+        autocmd FileType netrw cmap <buffer> <C-R><C-F> <Plug><cfile>
+
         " Wipe out the hidden or unloaded (after `:bdelete`) buffers
         function! Bwipeout(all) abort
           let buffers = filter(getbufinfo(), {_, v -> !v.loaded || v.hidden})
@@ -436,11 +435,16 @@
 " Key Mappings / Commands / Autocmds {
     inoremap jk <ESC>
     nnoremap <BS> :noh<CR>
+    nnoremap <silent> y. <Cmd>call setreg(v:register, expand('%:p'))<CR><Cmd>echo getreg(v:register)<CR>
     " 注：在常规模式下，按<leader>键再按c键再按M键（无须同时，允许按键间隔一秒）可清除行尾 ^M 符号
     nnoremap <leader>cM :%s/\r$//g<CR>:noh<CR>
     " 重读/在新的分屏中打开我的 ~/.vimrc 文件，命令（:vsplit $MYVIMRC<CR> 和 :source $MYVIMRC<CR>）
     nnoremap <leader>ve :exec 'vsplit '.g:this_vimrc<CR>
     nnoremap <leader>sv :exec 'source '.g:this_vimrc<CR>
+    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
+    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
+    nnoremap <expr> <C-H> '<C-W><'.v:count1 | nnoremap <expr> <C-L> '<C-W>>'.v:count1
+    nnoremap <expr> <C-J> '<C-W>+'.v:count1 | nnoremap <expr> <C-K> '<C-W>-'.v:count1
     " Insert current time at the cursor position
     inoremap <silent> <C-D> <C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR>
     " To insert expr result, put expr into the register first!
@@ -465,38 +469,28 @@
     nnoremap <leader>n <Cmd>bnext<CR>
     nnoremap <leader>o <Cmd>b#<CR>
     nnoremap <leader>b <Cmd>Red ls<CR>
+    nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
     nnoremap <leader>x <Cmd>Lexplore<CR>
     nnoremap <leader>X :Lexplore<space><space>
     nnoremap <leader>g <Cmd>Grep! <cword> .<CR>
-    nnoremap <leader>f <Cmd>Find! <cword><CR>
     nnoremap <leader>G :Grep!<space><space>
+    nnoremap <leader>f <Cmd>Find! <cword><CR>
     nnoremap <leader>F :Find!<space><space>
-    nnoremap <leader>S :Start<space><space>
-    nnoremap <leader>Q :Quick<space><space>
     nnoremap <leader>M <Cmd>Red message<CR>
-    nnoremap <leader>ts <Cmd>tab split<CR>
-    nnoremap <leader>tn <Cmd>tabnext<CR>
-    nnoremap <leader>tp <Cmd>tabprevious<CR>
+    nnoremap <leader><tab>s <Cmd>tab split<CR>
+    nnoremap <leader><tab>n <Cmd>tabnext<CR>
+    nnoremap <leader><tab>p <Cmd>tabprevious<CR>
     " Toggle boolean option, inverse the option of nowrap/nospell/nolist/nopaste
     nnoremap <silent> <leader>iw <Cmd>set wrap!<CR><Cmd>set wrap?<CR>
     nnoremap <silent> <leader>is <Cmd>set spell!<CR><Cmd>set spell?<CR>
     nnoremap <silent> <leader>il <Cmd>set list!<CR><Cmd>set list?<CR>
     nnoremap <silent> <leader>ip <Cmd>set paste!<CR><Cmd>set paste?<CR>
-    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
-    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
-    nnoremap <expr> <C-H> '<C-W><'.v:count1 | nnoremap <expr> <C-L> '<C-W>>'.v:count1
-    nnoremap <expr> <C-J> '<C-W>+'.v:count1 | nnoremap <expr> <C-K> '<C-W>-'.v:count1
-    " Start program or open a doc/URL with default program, which is alternative to command gx.
-    nnoremap <leader>W :!start<space><space> | vnoremap <leader>W "vy:execute '!start' @v<CR>
     " Create stmt to get the key sequence which is a MACRO in the target register (example w).
     " After recording a macro with w, typing "w<leader>mm can create stmt to get this macro.
     " In future, you can get this macro by executing this stmt, and execute macro with @w
     nnoremap <leader>mm :<C-U><C-R><C-R>='let @'. v:register .' = '. string(getreg(v:register))<CR><C-F><LEFT>
-    nnoremap <leader>ll :let @*=expand('%:p:.').' ('.line('.').')'<CR>:echo '-=Relative Postion Copied=-'<CR>
-    nnoremap <leader>vd <Cmd>let @*=expand('%:p')<CR><Cmd>echo @*<CR>
+    nnoremap <leader>ll :<C-U>call setreg(v:register,expand('%:p:.').' ('.line('.').')')<CR><Cmd>echo getreg(v:register)<CR>
     nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR>
-    nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
-    nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
     nnoremap <leader>vs :exec 'vsplit' g:my_toolbox.'/snippets.md'<CR>      " 选中沉淀，Run或<space><enter>
     " Execute the visual selection as a shell command
     vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu nornu<CR>"vP:exec '%!'.&shell<CR>
