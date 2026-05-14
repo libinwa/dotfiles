@@ -137,23 +137,23 @@
       set noshowmode              " Don't display the current mode
       let g:theModes={'n':'NORMAL', 'v':'VISUAL', 'V':'V·LINE', "\<C-V>":'V·BLOCK',
             \'i':'INSERT', 'R':'REPLACE', 'c':'COMMAND', '!':'SHELL', 't':'TERMINAL'}
-      silent function! CurrentMode(m=mode())
+      silent function! CurrentMode(m=mode()) abort
         return get(g:theModes, a:m, a:m)
       endfunction
-      silent function! GitBranch()
+      silent function! GitBranch() abort
         let branch = exists('*FugitiveHead')? FugitiveHead() : ''
         return empty(branch)? '' : ' '.branch.' |'
       endfunction
-      silent function! BuffersListed()
+      silent function! BuffersListed() abort
         return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
       endfunction
-      silent function! Stl_filename()
+      silent function! Stl_filename() abort
         return (&bl && empty(&bt))? '%t' : '%f'
       endfunction
-      silent function! Stl_fileencoding()
-        let fenc = empty(&fenc) ? &enc : &fenc
-        let bomb = (exists('+bomb') && &bomb) ? ' with BOM' : ''
-        return fenc.bomb
+      silent function! Stl_fileencoding() abort
+        let l:fenc = empty(&fenc) ? &enc : &fenc
+        let l:bomb = (exists('+bomb') && &bomb) ? ' with BOM' : ''
+        return l:fenc.l:bomb
       endfunction
       " Broken down into includeable segments, settings after %= is for right side
       " Highlight the bottom-right winnr for easy navigation with winnr+ <CTRL-W>w
@@ -172,7 +172,7 @@
       hi! User2 ctermbg=NONE guibg=NONE
       hi! User3 ctermbg=70 ctermfg=255 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
-      if ( 0 )  " 0 is for disable transparent bg, using 1 to enable
+      if ( 0 )  " 0 is for disable transparent bg, 1 or true to enable
         hi! Normal  guibg=NONE ctermbg=NONE
         hi! LineNr  guibg=NONE ctermbg=NONE
         hi! NonText guibg=NONE ctermbg=NONE
@@ -281,11 +281,11 @@
         endfunction
         nnoremap <silent> Q :call ToggleQuickfix()<CR>
 
-        function! NetrwGetWordPath() abort
+        function! NetrwGetWordPath()
           let w=netrw#Call('NetrwGetWord')
           let p=b:netrw_curdir.'/'
           if (w:netrw_liststyle==3)
-            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), w.'$', '', '')
+            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), escape(w, '.').'$', '', '')
           endif
           return p.w
         endfunction
@@ -304,7 +304,7 @@
     " }
 
     " For the Projects {
-        silent function! ProjectDir(seek=0, path='')
+        silent function! ProjectDir(seek=0, path='') abort
           let g:this_project = get(g:, 'this_project', {'path':'',
                 \'markers': ['.git', '.svn', '.vs', '.vscode', '.editorconfig']})
           if !empty(a:path)
