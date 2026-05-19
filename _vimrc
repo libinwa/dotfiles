@@ -285,7 +285,7 @@
           let w=netrw#Call('NetrwGetWord')
           let p=b:netrw_curdir.'/'
           if (w:netrw_liststyle==3)
-            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), escape(w, '.').'$', '', '')
+            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), escape(w, '.*[]~\').'$', '', '')
           endif
           return p.w
         endfunction
@@ -311,7 +311,7 @@
             let g:this_project.path = trim(fnamemodify(expand(a:path), ':p'))
           endif
           if a:seek || empty(g:this_project.path)
-            let name = trim(fnamemodify(bufname(), ':p'))
+            let name = trim(fnameescape(fnamemodify(bufname(), ':p')))
             let g:this_project.path = trim(fnamemodify(name, ':h'))
             let finding = ''
             for marker in g:this_project.markers     " iterate all markers
