@@ -151,9 +151,6 @@ colo CandyPaper
 " local envs
 "
 "let $PATH = g:my_toolbox."/scripts;".$PATH    " Got env of my scripts
-"if isdirectory("C:/Program Files/Git/usr/bin") | let $PATH = $PATH.";C:/Program Files/Git/usr/bin" | endif       " for various tool at git home.
-"if isdirectory("C:\\Program Files\\Oracle\\VirtualBox") | let $PATH = $PATH.";C:\\Program Files\\Oracle\\VirtualBox" | endif
-"let $PATH = $PATH.';C:\\ProgramFiles\\llvm\\clang+llvm-20.1.4-x86_64-pc-windows-msvc\\bin'
 "if exists('&pythonthreehome') | let &pythonthreehome=expand("$HOME/.conda/envs/py38") | let $PATH = &pythonthreehome.";".&pythonthreehome."/Scripts;".$PATH | endif
 " http_proxy and https_proxy pointing to px (http://127.0.0.1:3128)
 "let $HTTP_PROXY="http://127.0.0.1:3128"
