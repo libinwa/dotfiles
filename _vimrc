@@ -3,103 +3,86 @@
 "- Description: This is the configuration file for vim
 "
 "  By copying this file to your `$HOME`, vim will then be configured.
+"  Toolbox 'tools.libs.scripts' 包含更多的沉淀。使用前需设置正确的路径。
 "
 "- History:
-"  2018-03-05 11:56:09 Created, 2025 updated.
+"  2018-03-05 11:56:09 Created, 2026 updated.
 "*********************************************************************/
 
 " General Settings {
     set nocompatible         " Must be first line
 
-    " Quote shell if it contains space and is not quoted
-    if &shell =~? '^[^"].* .*[^"]'
-      let &shell='"' . &shell . '"'
-    endif
-
-    let g:mapleader = ','    " default leader: \
+    let g:mapleader = ' '     " Using space/comma is better than default \
     " Instead of using $MYVIMRC, add 'g:this_vimrc' to avoid path confused.
     let g:this_vimrc = get(g:, 'this_vimrc', resolve(expand('<sfile>:p')))
-    silent! function! MyVimrcDir()
-      return fnamemodify(g:this_vimrc, ':h')
-    endfunction
+    " Toolbox folder offers more practice-based resources.
+    let g:my_toolbox = simplify(fnamemodify(g:this_vimrc, ':h').'/../tools.libs.scripts/')
 
-    filetype on                     " Detects file type
-    filetype plugin on
-    filetype plugin indent on
+    filetype plugin indent on       " Enable filetype detection.
+    syntax enable                   " Enable syntax highlighting.
+    set encoding=utf-8              " Character encoding used inside vim.
+    " when reading file, tries to use the first mentioned encoding in list
+    set fileencodings=ucs-bom,utf-8,gbk,gb18030,latin1
+    set linebreak                   " Avoid wrapping a line in the middle of a word
+    set nowrap                      " No wrap for long line
 
-    set encoding=utf-8              " character encoding used inside Vim.
-    scriptencoding utf-8            " if you set the 'encoding' option :scriptencoding must be placed after that.
-    set fileencoding=utf-8          " character encoding for the file of buffers.
-    set fileencodings=ucs-bom,utf-8,gbk,gb2312,gb18030,big5,cp936,latin1
-
-    syntax enable                   " Syntax highlighting
-
-    set shortmess+=filmnrxoOatTI    " 保留欢迎界面? set shortmess-=I
     set autoindent                  " Indent at the same level of the previous line
-    set autoread                    " 当文件在外部被修改，自动更新该文件
-    set backspace=indent,eol,start  " Backspace for dummies
-    set expandtab                   " Tabs are spaces, not tabs
-    set hidden                      " Allow buffer switching without saving
-    set history=1000                " Store a ton of history (default is 20)
+    set smartindent                 " Enable smart indent
+    set expandtab                   " Tabs are spaces, not Tab (ASCII 9)
+    set smarttab                    " 指定按一次backspace就删除shiftwidth宽度
+    set softtabstop=2               " Let backspace delete indent
+    set tabstop=2                   " Columns for horizontal Tab (ASCII 9)
+    set shiftwidth=2                " Columns for one level of indentation
+    set shiftround                  " Round to the nearest multiple of "shiftwidth"
+
     set hlsearch                    " Highlight search terms
     set ignorecase                  " Case insensitive search
-    set incsearch                   " `set noincsearch` " 在输入要搜索的文字时，取消实时匹配
-    set iskeyword-=#                " '#' is an end of word designator
-    set iskeyword-=-                " '-' is an end of word designator
-    set iskeyword-=.                " '.' is an end of word designator
+    set incsearch                   " `set noincsearch` 在输入要搜索的文字时，取消实时匹配
+    set smartcase                   " For the search pattern contains upper case characters.
+
+    set shortmess+=aIcF             " 保留欢迎界面? set shortmess-=I
+    set autoread                    " 当文件在外部被修改，自动更新该文件
+    set backspace=indent,eol,start  " Backspace for dummies
+    set belloff=all                 " 关闭提示音
+    set foldmethod=indent           " Fold based on indention levels.
+    set foldnestmax=3               " Only fold up to three nested levels
+    set hidden                      " Allow buffer switching without saving
+    set history=1000                " Store a ton of history (default is 20)
+    set list                        " 显示非可见字符，设置非可见字符的可见字符替代方案 (listchars)
+    set listchars=tab:›\ ,trail:•,extends:>,precedes:<,nbsp:.
     set matchpairs+=<:>             " Match, to be used with %
     set mouse=a                     " Enable mouse usage
     set mousehide                   " Hide the mouse cursor while typing
-    set nojoinspaces                " Prevents inserting two spaces after punctuation on a join (J)
-    set nowrap                      " no wrap for long line
-    set nospell                     " no spell checking
+    set nojoinspaces                " Prevents inserting spaces after punctuation on a join (J)
+    set nofoldenable                " 打开时不折叠
     set number                      " Line numbers on
+    set relativenumber              " 相对行号很好jump
     "set path+=**                    " 检索file_in_path时递归查找子目录, 递归就会拖慢
-    set relativenumber              " Line relative numbers on
-    set shiftwidth=2                " Use indents of 2 spaces
+    set sessionoptions-=help,buffers,options     " Better for more use cases
     set showmatch                   " Show matching brackets/parenthesis
-    set smartcase                   " For the search pattern contains upper case characters.
-    set smartindent                 " Enable smart indent
-    set smarttab                    " 指定按一次backspace就删除shiftwidth宽度
-    set softtabstop=2               " Let backspace delete indent
-    set tabstop=2                   " An indentation every 2 columns
-    "set vb t_vb=                    " 关闭提示音
+    set title                       " Update the (GUI or terminal) window title
     set viewoptions=folds,options,cursor,unix,slash    " Better Unix / Windows compatibility
-    set virtualedit=onemore         " Allow for cursor beyond last character
-    set wildmenu                    " Show list instead of just completing
-    set wildmode=list:longest,full  " Command <Tab> completion, list matches, then longest common part, then all.
+    set virtualedit=onemore         " Cursor can be beyond last character
+    set wildmenu                    " Cmdline-completion show list instead of just completing
+    set wildmode=list:longest,full  " Cmdline-completion behavior
 
-    set nofoldenable                " 禁用折叠 `set foldenable` " 启用折叠
-    set foldmethod=indent           " indent 折叠方式 `set foldmethod=marker` " marker 折叠方式
-    " 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
-    nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+    " Enhanced configurations, silently ignored in unsupported versions (harmless)
+    silent! set diffopt=internal,filler,context:4,vertical,hiddenoff,followwrap  " closeoff excluded.
+    silent! set diffopt+=indent-heuristic,algorithm:patience   " Better algorithm for Vim 8.x
+    silent! set diffopt+=inline:char,linematch:60              " Vim 9.2+
+    silent! set jumpoptions+=stack                             " Better jumplist for Vim 9.0+
+    silent! set completeopt+=nearest
+    "silent! set completeopt+=fuzzy,nosort     " Vim 9.2+, conflict with 3rd-party completion result
 
-    " Enhanced diff configuration, silently ignored in unsupported versions (harmless)
-    silent! set diffopt-=closeoff
-    silent! set diffopt+=internal,indent-heuristic,vertical,hiddenoff,followwrap
-    silent! set diffopt+=algorithm:patience               " Better algorithm for Vim 8.1+
+    " Using PASTE mode to solve Paste Indentation Problem
+    silent! set pastetoggle=<F12>
+    " When possible use + register for copy-paste
+    silent! set clipboard=unnamed,unnamedplus
 
-    " pastetoggle (sane indentation on pastes)
-     silent! set pastetoggle=<F12>
-    if has('clipboard')
-      silent! set clipboard=unnamed
-      silent! set clipboard+=unnamedplus     " When possible use + register for copy-paste
-    endif
-
-    " 非可见字符不显示, `set list`可按预定字符(listchars指定)替代显示非可见字符
-    set list
-    " 设置非可见字符的显示时的可见字符替代方案
-    set listchars=tab:›\ ,trail:•,extends:>,precedes:<,nbsp:.
-    if &encoding !=? 'utf-8'
-      echohl WarningMsg | echomsg 'encoding' &encoding 'might cause invalid listchars display' | echohl NONE
-    endif
-
-    " Jumping with tags:
-    " A tag is an identifier that appears in "tags" files. "tags" file should be generated by a tool like
-    " "ctags -R -c++-kinds=+px -fields=+iaS -extra=+q" before ":tag" and CTRL-] can be used, see ":h tags".
-    "
-    " The tool of "gtags" (or "cscope") is a tagging system which works the same way across diverse
-    " environments. Plugins which integrated the tagging system can be easy to use.
+    " Jumping with tags: tags are entities that appear in "tags" files. "tags" file should be
+    " generated by a tool like "ctags -R -c++-kinds=+px -fields=+iaS -extra=+q" before ":tag"
+    " and hotkey CTRL-] can be used, see ":h tags". And tool of "gtags" (or "cscope") is a
+    " nice tagging system. Vim plugins which integrated the tagging system can be easy to use.
     "
     " 以下设置索引文件名为".tags",以小数点开头更便于识别。后面的分号不要去掉!!
     " 加`;`表示若当前编辑的文件所在目录中不存在".tags"，则在其父目录中查找".tags"直至根目录。
@@ -112,16 +95,14 @@
       set grepprg=rg\ --vimgrep\ --no-heading\ --follow\ --smart-case
     endif
 
-    "set backup                  " Backups are nice ...
-    set nobackup                " 设置无备份文件
-    set writebackup             " 保存文件前建立备份，保存成功后删除该备份
-    set noswapfile              " 设置无临时文件
-    if has('persistent_undo')     " Enable persistent_undo
-      set undofile                " So is persistent undo ...
-      set undolevels=1000         " Maximum number of changes that can be undone
-      set undoreload=10000        " Maximum number lines to save for undo on a buffer reload
-      " Put undofile in the unified directory
-      let uDir = MyVimrcDir().'/.vim/undo'
+    set nobackup                    " Backups are nice ... 设置无备份文件
+    set writebackup                 " 保存文件前建立备份，保存成功后删除该备份
+    set noswapfile                  " 设置无临时文件
+    if has('persistent_undo')       " Check and enable persistent_undo
+      set undofile                          " Saves undo history to undo file when writing a buffer
+      set undolevels=1000                   " Maximum number of changes that can be undone
+      set undoreload=10000                  " Maximum number lines to save for undo on a buffer reload
+      let uDir = fnamemodify(g:this_vimrc, ':h').'/.vim/undo'  " Put undofile in the unified directory
       if !isdirectory(uDir) && exists('*mkdir')
         call mkdir(uDir, 'p', 0o700)
       endif
@@ -131,109 +112,78 @@
 
 
 " UI Settings {
-    " set background, toggle between dark and light
-    set background=dark
-    nnoremap <silent> <leader>tb <Cmd>if &bg ==? "dark"<Bar>set bg=light<Bar>else<Bar>set bg=dark<Bar>endif<CR>
-    set winminheight=0              " Windows can be 0 line high
-    set splitright                  " Puts new vsplit windows to the right of the current
-    set splitbelow                  " Puts new split windows to the bottom of the current
-    set fillchars=vert:\ ,fold:-    " Sets characters to fill the statuslines and vertical separators.
-    "set t_Co=256                    " 8-bit color (256 colors) to make xterm/win32 vim shine
-    set termguicolors               " Using guibg/fg attributes in terminal, true color(24-bit color) is required.
-    set cursorline                  " Highlight current line
-    set scrolljump=5                " Lines to scroll when cursor leaves screen
-    set scrolloff=3                 " Minimum lines to keep above and below cursor
+    set background=dark           " Set background, toggle between dark and light
+    nnoremap <silent> <leader>bg <Cmd>if &bg ==? "dark"<Bar>set bg=light<Bar>else<Bar>set bg=dark<Bar>endif<CR>
+    set cursorline                " Highlight current line.
+    set cmdheight=2               " Screen lines to use for the command-line.
+    set fillchars=vert:\ ,fold:-  " Characters to fill the statuslines and vertical separators.
+    set ruler                     " Show the line and column number of the cursor position
+    set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)    " a ruler format on steroids
+    set splitright                " Puts new vsplit windows to the right of the current
+    set splitbelow                " Puts new split windows to the bottom of the current
+    set scrolloff=3               " Minimum screen lines to keep above and below cursor
+    set sidescrolloff=5           " Minimum screen columns to keep left and right cursor
+    set tabpagemax=50             " Maximum number of tab pages
+    set termguicolors             " Using guibg/fg attributes in terminal, true color is required.
 
-    set cmdheight=2                 " Set command line height as 2，default 1
-    if has('cmdline_info')
-      set ruler                     " show the ruler
-      set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)     " a ruler on steroids
-      set showcmd    " show partial command in status line and selected chars/lines in visual mode
-    endif
-
-    if has('statusline')            " Add functions for statusline customizations
-      set laststatus=2              " Set status line on
-      set noshowmode                " Don't display the current mode
+    if has('statusline')          " Statusline customizations
+      set laststatus=2            " Statusline on
+      set noshowmode              " Don't display the current mode
       let g:theModes={'n':'NORMAL', 'v':'VISUAL', 'V':'V·LINE', "\<C-V>":'V·BLOCK',
             \'i':'INSERT', 'R':'REPLACE', 'c':'COMMAND', '!':'SHELL', 't':'TERMINAL'}
-      silent function! CurrentMode(m=mode())
+      silent function! CurrentMode(m=mode()) abort
         return get(g:theModes, a:m, a:m)
       endfunction
-      silent function! FencStr()
-        let fencStr = empty(&fenc) ? &enc : &fenc
-        let bombStr = (exists('+bomb') && &bomb) ? ' with BOM' : ''
-        return fencStr.bombStr
+      silent function! GitBranch() abort
+        let branch = exists('*FugitiveHead')? FugitiveHead() : ''
+        return empty(branch)? '' : ' '.branch.' |'
       endfunction
-      silent function! BuffersListed()
-        return len(getbufinfo({'buflisted':1}))
+      silent function! BuffersListed() abort
+        return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
       endfunction
-      silent function! GitBranch()
-        return exists('*FugitiveHead')? FugitiveHead() : ''
+      silent function! Stl_filename() abort
+        return (!&bl || &bl && empty(&bt))? '%t' : '%f'
       endfunction
-      " Broken down into includeable segments, settings from %= is for right side
-      " Showing window number right, you can goto next window with winnr +<C-W>w
-      set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*
-      set stl+=%#User2#%{GitBranch()!=#''?'\ '.GitBranch().'\ \|':''}%*
-      set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%{->&bl&&empty(&bt)?'%t':'%f'}()%}\ %*
-      set stl+=%#User3#\ %*%#User9#%M%*%#User3#%n/%{BuffersListed()}%R%H%W%*
-      set stl+=%#User3#\ %{ReadableSize(wordcount().bytes)}\ \ %*
-      set stl+=%#User3#%=%{FencStr()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
-      set stl+=%#User4#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
-      set stl+=%#User5#\ %{winnr()}\ %*
+      silent function! Stl_fileencoding() abort
+        let l:fenc = empty(&fenc) ? &enc : &fenc
+        let l:bomb = (exists('+bomb') && &bomb) ? ' with BOM' : ''
+        return l:fenc.l:bomb
+      endfunction
+      " Broken down into includeable segments, settings after %= is for right side
+      " Highlight the bottom-right winnr for easy navigation with `winnr <CTRL-W>w`
+      set stl=%#User1#\ %{&paste?'PASTE':CurrentMode()}\ %*%#User2#%{GitBranch()}%*
+      set stl+=%#User2#\ %{exists('b:stl_title')?b:stl_title:''}%{%Stl_filename()%}\ %*
+      set stl+=%#User2#\ %1*%#User9#%M%*%#User2#%n/%{BuffersListed()}%R%H%W\ %*
+      set stl+=%#User2#%=%{Stl_fileencoding()},%{&ff}/%{&ft!=#''?&ft:'no\ ft'}\ %*
+      set stl+=%#User2#\ %-19(%l/%L,%02c%03V\ %P\ %)%O'%02b'%*
+      set stl+=%#User3#\ %{winnr()}\ %*
     endif
 
     " Customizations of highlight
     silent function! SetHighlights()
-      " highlight groups for statusline customizations
-      hi! StatusLine cterm=bold ctermbg=NONE ctermfg=255 gui=bold guibg=NONE guifg=#FFFFFF
-      hi! StatusLineNC cterm=NONE ctermbg=NONE ctermfg=250 gui=none guibg=NONE guifg=#BCBCBC
-      hi! StatusLineTerm cterm=bold ctermbg=NONE ctermfg=255 gui=bold guibg=NONE guifg=#FFFFFF
-      hi! StatusLineTermNC cterm=NONE ctermbg=NONE ctermfg=250 gui=none guibg=NONE guifg=#BCBCBC
-      hi! User1 ctermbg=24 guibg=#264F78
-      hi! User2 ctermbg=238 guibg=#3A3D41
-      hi! User3 ctermbg=NONE guibg=NONE
-      hi! User4 ctermbg=238 guibg=#3A3D41
-      hi! User5 ctermbg=70 ctermfg=0 guibg=#6A9955 guifg=#000000
+      " highlight groups for StatusLine
+      hi! User1 ctermbg=24 guibg=#264F78 ctermfg=255 guifg=#FFFFFF
+      hi! User2 ctermbg=NONE guibg=NONE
+      hi! User3 ctermbg=70 ctermfg=255 guibg=#6A9955 guifg=#FFFFFF
       hi! User9 ctermfg=210 guifg=#FF9F64
-      " clear highlight of sign column. To use highlight, comment the following line.
-      hi! clear CursorLineSign | hi! clear SignColumn
-      " transparent terminal. To disable it, comment the following if block
-      if !has('gui_running')
-        hi! Normal  guibg=NONE ctermbg=NONE
-        hi! LineNr  guibg=NONE ctermbg=NONE
-        hi! NonText guibg=NONE ctermbg=NONE
-        hi! EndOfBuffer guibg=NONE ctermbg=NONE
-      endif
     endfunction
 
     " Group of autocommands for UI settings
     augroup setUi
       autocmd!
-      autocmd GUIEnter * simalt ~x    " 窗口启动时自动最大化
+      autocmd GUIEnter * if has('win32') || has('win64') | simalt ~x | endif   " 窗口启动时自动最大化
       autocmd VimEnter,ColorScheme * call SetHighlights()   " 自定义 highlight groups
-      " Toggle line width 启用每行超过某一字符总数后给予字符变化提示（字体变蓝加下划线）
-      autocmd BufWinEnter * if exists('w:line_width') && w:line_width
-            \|   let w:m2 = matchadd('Underlined', printf('\%%>%dv.\+', 120), -1)
-            \| elseif exists('w:m2') && w:m2 != -1
-            \|   call matchdelete(w:m2) | let w:m2 = -1
-            \| endif
-      nnoremap <silent><leader>lw :let w:line_width = !(exists('w:line_width') && w:line_width)<CR>
-            \:doautocmd setUi BufWinEnter<CR>
     augroup END
 
     if has('gui_running')
-      winpos 100 10                     " 指定窗口出现的位置，坐标原点在屏幕左上角
-      set lines=40 | set columns=120    " 指定窗口大小，lines为高度，columns为宽度
-      if ( has('unix')&&!has('macunix')&&!has('win32unix') ) | set guifont=Inconsolata\ 12 | endif
-      if ( has('macunix') ) | set guifont=Inconsolata:h12 | endif
-      if ( has('win32') || has('win64') ) | set guifont=Consolas:h10,Inconsolata:h12 | endif
+      silent! winpos 100 10                     " 指定窗口出现的位置，坐标原点在屏幕左上角
+      silent! set lines=40 | set columns=120    " 指定窗口大小，lines为高度，columns为宽度
+      if ( has('unix')&&!has('macunix')&&!has('win32unix') ) | set guifont=Inconsolata\ 14 | endif
+      if ( has('macunix') ) | set guifont=Inconsolata:h14 | endif
+      if ( has('win32') || has('win64') ) | set guifont=Consolas:h14,Inconsolata:h14 | endif
       " 显示/隐藏菜单栏、工具栏、滚动条，可用 <C-F11> 切换
       set guioptions-=m | set guioptions-=T | set guioptions-=r | set guioptions-=L
-      nnoremap <silent> <C-F11> :if &guioptions =~# 'm' <Bar>
-            \  set guioptions-=m <Bar> set go-=T <Bar> set go-=r <Bar> set go-=L <Bar>
-            \else <Bar>
-            \  set guioptions+=m <Bar> set go+=T <Bar> set go+=r <Bar> set go+=L <Bar>
-            \endif<CR>
+      nnoremap <silent> <C-F11> <Cmd>if &go=~#'mTrL'<Bar>set go-=mTrL<Bar>else<Bar>set go+=mTrL<Bar>endif<CR>
     endif
 " }
 
@@ -262,50 +212,23 @@
         endfunction
         command! -range=% -nargs=0 Cfmt call ClangFormat(<line1>, <line2>)
 
-        function! ReadableSize(size)               " ---0------1-----2-----3--
-          let p = 0 | let l = a:size | let unit = ['Bytes', 'KB', 'MB', 'GB']
-          while l > 1024 | let l = l / 1024.0 | let p = p + 1 | endwhile
-          let readableSize = printf('%d %s', a:size, unit[0])
-          if p > 0 | let readableSize = printf('%d %s, %.2f %s', a:size, unit[0], l, unit[p]) | endif
-          return readableSize
+        function! Ripgrep(...)
+          exec 'Quick rg --vimgrep --no-heading --follow  --smart-case' join(a:000, ' ')
         endfunction
-        command! -bar -nargs=? -complete=file Size echo ReadableSize(getfsize(@%))
+        command! -bang -nargs=* -complete=dir Grep call Ripgrep((<bang>0?'':'--max-depth=4'), <f-args>)
+        command!       -nargs=* -complete=dir Grepa call Ripgrep('-uuu', <f-args>)
 
-        " Sync files between local source and destination (ssh config is for remote).
-        function! SyncFiles(src, dest)
-          if a:src == '' | echohl ErrorMsg | echomsg printf('source cannot be empty.') | echohl NONE | endif
-          let host = '' | let source = a:src | let destination = a:dest | let tmpfmt = a:src.' %s'
-          if destination == ''
-            let choices='' | let i = 1 | let h = '' | let hosts=['NA']
-            echo 'Hosts:' | echo printf(' [%d] local', i) | call add(hosts, h) | let i+=1
-            let sshconfig = expand('$HOME/.ssh/config')
-            if filereadable(sshconfig)
-              let items = filter(readfile(sshconfig), 'v:val =~ "^Host\\s\\+"')
-              for h in items
-                let h = substitute(h, '^\s*Host\s\+\(.*\)\s*', '\1', 'g')
-                echo printf(' [%d] %s', i, h) | call add(hosts, h.':') | let i+=1
-              endfor
-            endif
-            let host = get(hosts, input("To:"), 'NA') | let tmpfmt = source.' '.host.'%s'
-            if host ==# 'NA' | let host = get(hosts, input("From:"), 'NA') | let tmpfmt = host.'%s '.source | endif
-            let destination = input("destination:")
-          endif
-          if host != 'NA' && destination != ''
-            if executable('rsync')
-              let cmd = printf('rsync -zahcvv --stats '.tmpfmt, destination)
-              let fltconfig = executable('rg')? get(glob('`rg --files | rg rsync_filter.txt`', 0, 1), 0, '')
-                    \: findfile('rsync_filter.txt', '**/*')  " Downward search
-              if fltconfig != '' | let cmd = cmd.' --filter="merge '.fltconfig.'"' | endif
-              call JobStart('SyncFiles[rsync]'.destination, cmd)
-            elseif executable('scp')
-              call JobStart('SyncFiles[scp]'.destination, printf("scp -Cprv ".tmpfmt, destination))
-            else
-              echohl ErrorMsg | echomsg printf('No executable sync tool.') | echohl NONE
-            endif
-          endif
+        " Find files with ripgrep
+        function! FindFiles(cmdopt_rgfiles, cmdopt_pattern='', cmdopt_path='', ...)
+          " &shell is required, because of pipe was used.
+          let cli = printf('%s %s "rg --files %s %s %s %s"', &shell, &shellcmdflag, a:cmdopt_rgfiles,
+                \join(a:000, ' '), (a:cmdopt_path!=''? shellescape(a:cmdopt_path) : ''),
+                \(a:cmdopt_pattern!=''?
+                \' | rg --no-heading --smart-case --sort path '.shellescape(a:cmdopt_pattern) : ''))
+          call QuickfixJob(cli, cli, getcwd(), {'efm':'%f'})
         endfunction
-        command! -bar -nargs=+ -complete=file Sync call SyncFiles(<f-args>)
-        command! -bar -nargs=+ -complete=file SyncI call SyncFiles(<q-args>, '')
+        command! -bang -nargs=* -complete=dir Find call FindFiles((<bang>0?'':'--max-depth=4'), <f-args>)
+        command!       -nargs=* -complete=dir Finda call FindFiles('--no-ignore --hidden', <f-args>)
 
         function! Redirect(...)
           let cmd = join(a:000, ' ')
@@ -320,7 +243,7 @@
           else
             new
             syntax clear
-            setlocal modifiable bt=nofile bh=wipe nobl noswf nowrap nospell nolist nu nornu
+            setlocal modifiable bt=nofile bh=wipe nobl noswf nowrap nospell nolist nu
             nnoremap <silent><buffer> q :q!<CR>
             put! = output
             call append('$', "---")
@@ -342,6 +265,18 @@
         endfunction
         nnoremap <silent> Q :call ToggleQuickfix()<CR>
 
+        function! NetrwGetWordPath()
+          let w=netrw#Call('NetrwGetWord')
+          let p=b:netrw_curdir.'/'
+          if (w:netrw_liststyle==3)
+            let p=substitute(netrw#Call('NetrwTreePath', w:netrw_treetop), escape(w, '.*[]~\').'$', '', '')
+          endif
+          return p.w
+        endfunction
+        autocmd FileType netrw nnoremap <buffer> y. <Cmd>call setreg(v:register,NetrwGetWordPath())<Bar>echo getreg(v:register)<CR>
+        autocmd FileType netrw cnoremap <buffer><expr> <Plug><cfile> NetrwGetWordPath()->({p->empty(p)?"\022\006":p})()
+        autocmd FileType netrw cmap <buffer> <C-R><C-F> <Plug><cfile>
+
         " Wipe out the hidden or unloaded (after `:bdelete`) buffers
         function! Bwipeout(all) abort
           let buffers = filter(getbufinfo(), {_, v -> !v.loaded || v.hidden})
@@ -353,14 +288,14 @@
     " }
 
     " For the Projects {
-        silent function! ProjectDir(seek=0, path='')
+        silent function! ProjectDir(seek=0, path='') abort
           let g:this_project = get(g:, 'this_project', {'path':'',
                 \'markers': ['.git', '.svn', '.vs', '.vscode', '.editorconfig']})
           if !empty(a:path)
             let g:this_project.path = trim(fnamemodify(expand(a:path), ':p'))
           endif
           if a:seek || empty(g:this_project.path)
-            let name = trim(fnamemodify(bufname(), ':p'))
+            let name = trim(fnameescape(fnamemodify(bufname(), ':p')))
             let g:this_project.path = trim(fnamemodify(name, ':h'))
             let finding = ''
             for marker in g:this_project.markers     " iterate all markers
@@ -390,64 +325,10 @@
     " }
 
     " Job control {
-        silent function! JobCallback(jid, cwd, cb, event, channel, data, streamname='')
-          if !empty(a:cb) && type(a:cb) ==? type(function("tr"))
-            call a:cb(a:jid, a:cwd, a:event, a:channel, a:data)
-          else
-            let l:job = a:channel | if exists('*ch_getjob') | let l:job = ch_getjob(a:channel) | endif
-            let l:buf = bufnr(a:jid.'$') | let l:wid = bufwinid(l:buf)
-            if l:wid == -1
-              silent execute 'new '.a:jid | silent execute 'cd '.a:cwd | syntax clear
-              setlocal modifiable bt=nofile bh=wipe nobl noswf nowrap nospell nolist nu nornu
-              let l:buf = bufnr() | let l:wid = bufwinid(l:buf) | let b:ss = 0   " Hold job and scrolling switch
-              nnoremap <silent><buffer><leader>ss :let b:ss = (b:ss != 0)? 0 : 1<CR>
-              if exists('*job_stop') | nnoremap <silent><buffer><leader>k :call job_stop(b:job, 'kill')<CR> | endif
-              if exists('*jobstop') | nnoremap <silent><buffer><leader>k :call jobstop(b:job)<CR> | endif
-            endif
-            if !empty(a:data) | call setbufvar(l:buf, '&ma', 1) | call setbufline(l:buf, line('$')+1, a:data) | endif
-            call setbufvar(l:buf, 'job', l:job) | call setbufvar(l:buf, '&mod', 0) | call setbufvar(l:buf, '&ma', 0)
-            if getbufvar(l:buf, 'ss') != 0 | call win_gotoid(l:wid) | call cursor('$', 0) | endif
-            if a:event ==? 'exit'
-              let l:stl_title = getbufvar(l:buf, 'stl_title') | call setbufvar(l:buf, 'stl_title', '*'.l:stl_title)
-            endif
-          endif
-        endfunction
-
-        " Usage: JobStart(jid, cmd, [cwd], [callback])
-        silent function! JobStart(jid, cmd, cwd=getcwd(), callback={})
-          let jid = substitute(strpart(a:jid, 0, 64), '\W', '-', 'g')
-          if exists('*job_start') && exists('*job_status')
-            let job = job_start(a:cmd, { 'out_cb':  function('JobCallback', [jid, a:cwd, a:callback, 'stdout']),
-                  \                      'err_cb':  function('JobCallback', [jid, a:cwd, a:callback, 'stderr']),
-                  \                      'exit_cb': function('JobCallback', [jid, a:cwd, a:callback, 'exit']),
-                  \                      'mode': 'nl',
-                  \                      'cwd': a:cwd })
-            if job_status(job) !=? 'run'
-              echohl ErrorMsg | echomsg 'Failed to start (jobinfo:' job_info(job) '):' a:cmd | echohl NONE
-            else
-              echomsg 'Successfully started (jobinfo:' job '):' a:cmd
-              call JobCallback(jid, a:cwd, a:callback, 'init', job_getchannel(job), '')
-            endif
-          elseif exists('*jobstart')
-            let job = jobstart(a:cmd, { 'on_stdout': function('JobCallback', [jid, a:cwd, a:callback, 'stdout']),
-                  \                     'on_stderr': function('JobCallback', [jid, a:cwd, a:callback, 'stderr']),
-                  \                     'on_exit':   function('JobCallback', [jid, a:cwd, a:callback, 'exit']),
-                  \                     'cwd': a:cwd })
-            if job <= 0
-              echohl ErrorMsg | echomsg 'Failed to start (errcode:' job '):' a:cmd | echohl NONE
-            else
-              echomsg 'Successfully started:' a:cmd
-              call JobCallback(jid, a:cwd, a:callback, 'init', job, '')
-            endif
-          else
-              echohl ErrorMsg | echomsg 'Job API is not available, VIM:' v:progpath | echohl NONE
-          endif
-        endfunction
-        command! -nargs=+ -complete=file_in_path Start call JobStart(<q-args>, <q-args>)
-
-        " Output data to QuickFix list
-        silent function! SetQfList(qfopts, jid, cwd, event, channel, data)
-          let l:qfbufnr = getqflist({'qfbufnr':0}).qfbufnr | let l:job = getbufvar(l:qfbufnr, 'job')
+        " Callback of QuickfixJob adds data to quickfix list
+        silent function! QuickfixJobCb(qfopts, jid, cwd, event, channel, data, ev='')
+          let l:qfbufnr = getqflist({'qfbufnr':0}).qfbufnr
+          let l:job = getbufvar(l:qfbufnr, 'job')
           if a:event ==? 'init'
             if type(l:job) ==? type({}) && has_key(l:job, a:jid)
               silent exec 'cd '.a:cwd | cclose | copen
@@ -466,17 +347,48 @@
             let l:qflstid = getqflist({'id':0}).id | let l:m = {l:qflstid : {'chn': a:channel}, a:jid : {'id': l:qflstid}}
             call setbufvar(getqflist({'qfbufnr':0}).qfbufnr, 'job', (type(l:job) != type({})? l:m : extend(l:job, l:m)))
           else
-            if type(l:job) ==? type({}) && has_key(l:job, a:jid)
+            if type(l:job) ==? v:t_dict && has_key(l:job, a:jid)
               if a:event ==? 'exit'
                 cclose | call setqflist([], 'a', {'id': l:job[a:jid].id, 'title': '*'.a:jid}) | copen
               else
-                let lines = a:data | if type(a:data) != type([]) | let lines = [a:data] | endif
+                let lines = a:data | if type(a:data) != v:t_list | let lines = [a:data] | endif
                 call setqflist([], 'a', {'id': l:job[a:jid].id, 'lines': lines}->extend(a:qfopts))
               endif
             endif
           endif
         endfunction
-        command! -nargs=+ -complete=file_in_path Quick call JobStart(<q-args>, <q-args>, getcwd(), function('SetQfList', [{}]))
+
+        " Usage: QuickfixJob(jid, cmd, [cwd], [quickfix opts])
+        silent function! QuickfixJob(jid, cmd, cwd=getcwd(), qfopts={})
+          let jid = substitute(strpart(a:jid, 0, 64), '\W', '-', 'g')
+          if exists('*job_start') && exists('*job_status')
+            let job = job_start(a:cmd, { 'out_cb':  function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'stdout']),
+                  \                      'err_cb':  function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'stderr']),
+                  \                      'exit_cb': function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'exit']),
+                  \                      'mode': 'nl',
+                  \                      'cwd': a:cwd })
+            if job_status(job) !=? 'run'
+              echohl ErrorMsg | echomsg 'Failed to start (jobinfo:' job_info(job) '):' a:cmd | echohl NONE
+            else
+              echomsg 'Successfully started (jobinfo:' job '):' a:cmd
+              call QuickfixJobCb(a:qfopts, jid, a:cwd, 'init', job_getchannel(job), '')
+            endif
+          elseif exists('*jobstart')
+            let job = jobstart(a:cmd, { 'on_stdout': function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'stdout']),
+                  \                     'on_stderr': function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'stderr']),
+                  \                     'on_exit':   function('QuickfixJobCb', [a:qfopts, jid, a:cwd, 'exit']),
+                  \                     'cwd': a:cwd })
+            if job <= 0
+              echohl ErrorMsg | echomsg 'Failed to start (errcode:' job '):' a:cmd | echohl NONE
+            else
+              echomsg 'Successfully started:' a:cmd
+              call QuickfixJobCb(a:qfopts, jid, a:cwd, 'init', job, '')
+            endif
+          else
+              echohl ErrorMsg | echomsg 'Job API is not available, VIM:' v:progpath | echohl NONE
+          endif
+        endfunction
+        command! -nargs=+ -complete=file_in_path Quick call QuickfixJob(<q-args>, <q-args>)
     " }
 " }
 
@@ -484,94 +396,80 @@
 " Key Mappings / Commands / Autocmds {
     inoremap jk <ESC>
     nnoremap <BS> :noh<CR>
-    " 注：在常规模式下，输入 <leader>cM (按<leader>键再按c键再按M键，无须同时，允许按键间隔一秒) 可清除行尾^M符号
+    " Hotkey CTRL-W is not as convenient as key mapping.
+    " Recursive mapping is intentional, expect <leader>w always mirrors CTRL-W
+    nmap <leader>w <C-W>
+    " 注：在常规模式下，按<leader>键再按c键再按M键（无须同时，允许按键间隔一秒）可清除行尾 ^M 符号
     nnoremap <leader>cM :%s/\r$//g<CR>:noh<CR>
-    " 重读/在新的分屏中打开我的 ~/.vimrc 文件 (:vsplit $MYVIMRC<CR> 和 :source $MYVIMRC<CR>)
+    nnoremap <silent> y. <Cmd>call setreg(v:register, expand('%:p'))<CR><Cmd>echo getreg(v:register)<CR>
+    " 重读/在新的分屏中打开我的 ~/.vimrc 文件，命令（:vsplit $MYVIMRC<CR> 和 :source $MYVIMRC<CR>）
     nnoremap <leader>ve :exec 'vsplit '.g:this_vimrc<CR>
     nnoremap <leader>sv :exec 'source '.g:this_vimrc<CR>
-    nnoremap <leader>w <C-W>
-    nnoremap <leader>q <Cmd>bdelete<CR>
-    nnoremap <leader>p <Cmd>bprevious<CR>
-    nnoremap <leader>n <Cmd>bnext<CR>
-    nnoremap <leader>o <Cmd>b#<CR>
-    nnoremap <leader>b <Cmd>Red ls<CR>
-    nnoremap <leader>g <Cmd>Grep! <cword> .<CR>
-    nnoremap <leader>f <Cmd>Find! <cword><CR>
-    nnoremap <leader>G :Grep!<space><space>
-    nnoremap <leader>F :Find!<space><space>
-    nnoremap <leader>S :Start<space><space>
-    nnoremap <leader>Q :Quick<space><space>
-    nnoremap <Tab><Tab> <Cmd>tab split<CR>
-    nnoremap <Tab>n <Cmd>tabnext<CR>
-    nnoremap <Tab>p <Cmd>tabprevious<CR>
-    if !has('nvim') && has('terminal')
-      nnoremap <leader>` <Cmd>terminal ++curwin<CR> | set termwinkey=<C-L> | tnoremap <C-L>p <Cmd>tabprevious<CR>
-    else
-      nnoremap <leader>` <Cmd>terminal<CR><Cmd>startinsert<CR> | tnoremap <C-L> <C-\> | tnoremap <C-L>N <C-\><C-N>
-    endif
+    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
+    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
+    nnoremap <expr> <C-Left> '<C-W><'.v:count1 | nnoremap <expr> <C-Right> '<C-W>>'.v:count1
+    nnoremap <expr> <C-Up> '<C-W>+'.v:count1 | nnoremap <expr> <C-Down> '<C-W>-'.v:count1
     " Insert current time at the cursor position
     inoremap <silent> <C-D> <C-R>=strftime('%Y-%m-%d %H:%M:%S')<CR>
     " To insert expr result, put expr into the register first!
     inoremap <silent> <C-E> <C-R>=eval(@")<CR>
-    inoremap <Tab>f <C-X><C-F>|inoremap <Tab>o <C-X><C-O>|inoremap <Tab>l <C-X><C-L>|inoremap <Tab>s <C-X>s
-    inoremap <Tab>n <C-X><C-N>|inoremap <Tab>p <C-X><C-P>|inoremap <Tab>v <C-X><C-V>|inoremap <Tab>] <C-X><C-]>
-    nnoremap <silent> M <Cmd>Red message<CR>
-    nnoremap <silent> [q <Cmd>cprev<CR> | nnoremap <silent> ]q <Cmd>cnext<CR>
-    nnoremap <silent> [w <Cmd>lprev<CR> | nnoremap <silent> ]w <Cmd>lnext<CR>
-    " Toggle boolean option, inverse the option of nowrap/nospell/nolist/nopaste
+    inoremap <Tab>f <C-X><C-F>|inoremap <Tab>o <C-X><C-O>
+    inoremap <Tab>l <C-X><C-L>|inoremap <Tab>s <C-X>s
+    inoremap <Tab>n <C-X><C-N>|inoremap <Tab>p <C-X><C-P>
+    inoremap <Tab>v <C-X><C-V>|inoremap <Tab>] <C-X><C-]>
+    if !has('nvim') && has('terminal')
+      nnoremap <leader>` <Cmd>terminal ++curwin<CR>
+      set termwinkey=<C-L>
+      tnoremap <C-L>p <Cmd>tabprevious<CR>
+    else
+      nnoremap <leader>` <Cmd>terminal<CR><Cmd>startinsert<CR>
+      tnoremap <C-L> <C-\>
+      tnoremap <C-L>N <C-\><C-N>
+    endif
+    nnoremap <leader>q <Cmd>bdelete<CR>
+    nnoremap <leader>p <Cmd>bprevious<CR>
+    nnoremap <leader>n <Cmd>bnext<CR>
+    nnoremap <leader>o <Cmd>b#<CR>
+    nnoremap <leader>L <Cmd>Red ls<CR>
+    nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
+    nnoremap <leader>x <Cmd>Lexplore<CR>
+    nnoremap <leader>g <Cmd>Grep! <cword> .<CR>
+    nnoremap <leader>G :Grep!<space><space>
+    nnoremap <leader>f <Cmd>Find! <cword><CR>
+    nnoremap <leader>F :Find!<space><space>
+    nnoremap <leader>M <Cmd>Red message<CR>
+    nnoremap <leader><tab>s <Cmd>tab split<CR>
+    nnoremap <leader><tab>n <Cmd>tabnext<CR>
+    nnoremap <leader><tab>p <Cmd>tabprevious<CR>
+    " Toggle boolean option, inverse the option of nowrap/nospell/nolist/nornu
     nnoremap <silent> <leader>iw <Cmd>set wrap!<CR><Cmd>set wrap?<CR>
     nnoremap <silent> <leader>is <Cmd>set spell!<CR><Cmd>set spell?<CR>
     nnoremap <silent> <leader>il <Cmd>set list!<CR><Cmd>set list?<CR>
-    nnoremap <silent> <leader>ip <Cmd>set paste!<CR><Cmd>set paste?<CR>
-    nnoremap <expr> <C-H> '<C-W><'.v:count1 | nnoremap <expr> <C-L> '<C-W>>'.v:count1
-    nnoremap <expr> <C-J> '<C-W>+'.v:count1 | nnoremap <expr> <C-K> '<C-W>-'.v:count1
+    nnoremap <silent> <leader>ir <Cmd>set rnu!<CR><Cmd>set rnu?<CR>
     " Create stmt to get the key sequence which is a MACRO in the target register (example w).
     " After recording a macro with w, typing "w<leader>mm can create stmt to get this macro.
-    " In future, you can get this macro by executing this stmt, and execute macro with @w
+    " In future, you can get this macro by executing this stmt, and execute macro with `@w`
     nnoremap <leader>mm :<C-U><C-R><C-R>='let @'. v:register .' = '. string(getreg(v:register))<CR><C-F><LEFT>
-    nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR> | nnoremap <leader>vd <Cmd>echo expand('%:p:h')<CR>
-    nnoremap <leader>ed :edit <cfile><CR> | vnoremap <leader>ed "vy:exec 'edit' @v<CR>
-    nnoremap <leader>gb <Cmd>exec 'buffer' expand('<cWORD>')<CR>
-    command! -bang -nargs=* Recent Red filter<bang> /<args>/ oldfiles    " Usage: Recent pattern
-    " Run vimscript line(s), line range area is allowed.
+    nnoremap <leader>ll :<C-U>call setreg(v:register,expand('%:p:.').' ('.line('.').')')<CR><Cmd>echo getreg(v:register)<CR>
+    nnoremap <leader>cd <Cmd>cd %:p:h<CR><Cmd>pwd<CR>
+    nnoremap <leader>vs :exec 'vsplit' g:my_toolbox.'/snippets.md'<CR>        " 选中沉淀，Run或<space><enter>
+    " Execute the visual selection as a shell command
+    vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu<CR>"vP:exec '%!'.&shell<CR>
+    " Run vimscript lines or line ranges.
     command! -range Run let lines=getline(<line1>,<line2>) | call execute(lines,'') | echo len(lines).' lines executed.'
-    " Execute the selected CLIs in Visual Mode with shell.
-    vnoremap <space><enter> "vy:bo new<CR>:setl bt=nofile bh=wipe nobl noswf nolist nu nornu<CR>"vP:exec '%!'.&shell<CR>
-    " Start to run program or open a document/URL with its default program on windows
-    vnoremap <leader>W "vy:execute '!start' @v<CR> | nnoremap <leader>W :!start<space><space>
-    let &spf = MyVimrcDir().'/../tools.libs.scripts/scripts/spell.'.&encoding.'.add' | nnoremap <leader>vz :exec 'vs' &spf<CR>
-    nnoremap <leader>vs :exec 'vsplit' MyVimrcDir().'/../tools.libs.scripts/snippets.md'<CR>   " 选中沉淀，Run或<space><enter>
-    " Review comments in the project directory
-    nnoremap <leader>vc :execute 'vsplit' ProjectDir().'/comments.md'<CR>
-    nnoremap <leader>ll :let @*=expand('%:p:.').' ('.line('.').')'<CR>:echo '-=Relative Postion Copied=-'<CR>
-    command! -range=% -nargs=* GitLog
-          \ exec 'Start git --no-pager log -L '.<line1>.','.<line2>.':'.expand('%:p:.').' '.<q-args>
-    command! -range=% -nargs=* GitBlame
-          \ exec 'Start git --no-pager blame -L '.<line1>.','.<line2>.' -- '.expand('%:p:.').' '.<q-args>
-    function! RgFiles(cmdopt_rgfiles, cmdopt_pattern='', cmdopt_path='', ...)
-      let rgpattern = a:cmdopt_pattern!=''? ' | rg --no-heading --smart-case --sort path '.shellescape(a:cmdopt_pattern) : ''
-      let filespath = a:cmdopt_path!=''? ' '.shellescape(a:cmdopt_path) : ''
-      let cli = &shell.' '.&shellcmdflag.' "'.'rg --files '.a:cmdopt_rgfiles.' '.join(a:000, ' ').filespath.rgpattern.'"'
-      call JobStart(cli, cli, getcwd(), function('SetQfList', [{'efm':'%f'}]))
-    endfunction
-    command! -bang -nargs=* -complete=dir Find  call RgFiles((<bang>0?'':'--max-depth=4'), <f-args>)
-    command! -bang -nargs=* -complete=dir Grep
-          \ exec 'Quick rg '.(<bang>0?'':'--max-depth=4').' --vimgrep --no-heading --follow  --smart-case ' <q-args>
-    command! -nargs=* -complete=dir Grepa Grep! -uuu <args>
-    command! -nargs=* -complete=dir Finda call RgFiles('--no-ignore --hidden', <f-args>)
-    command! -range -nargs=+ Fmt <line1>,<line2>s/\%V\w\+/\=printf(<q-args>, submatch(0))/g | noh  " Usage: Fmt %#x  Fmt %#d ...
+    command! -bang -nargs=* Recent Red filter<bang> /<args>/ oldfiles    " Usage: Recent pattern
+    " Fmt %#x  Fmt %#d ...
+    command! -range -nargs=+ Fmt <line1>,<line2>s/\%V\w\+/\=printf(<q-args>,submatch(0))/g | noh
 
-    " Group of autocommands
     augroup VimRcAUs
       autocmd!
-      " Seek project directory when vim entered.
       autocmd VimEnter * if &buftype !=? 'terminal' && bufname() !~ "^\[A-Za-z0-9\]*://" | call ProjectDir() | endif
       " Restore cursor to file position in previous editing session.
       autocmd BufWinEnter * if line("'\"") <= line("$") | silent! normal! g`" | endif
       " Instead of reverting cursor to the last position, set it to the first line when editing git commit message
       autocmd FileType gitcommit autocmd BufWinEnter COMMIT_EDITMSG call setpos('.', [0, 1, 1, 0])
       " For reading content of quickfix again (<leader>u), setting errorformat tells vim how to read its own quickfix list
-      autocmd FileType qf setl nobl nowrap nospell nolist nu nornu stl<
+      autocmd FileType qf setl nobl nowrap nospell nolist nu stl<
             \| setl errorformat=%f\|%l\ col\ %c\|%m
             \| nnoremap <buffer> K :cprev<CR>zz<C-W>p | nnoremap <buffer> J :cnext<CR>zz<C-W>p
             \| nnoremap <buffer> <leader>m :if &modifiable<Bar>setl noma nomod<Bar>else<Bar>setl ma<Bar>endif<CR>
@@ -586,40 +484,17 @@
 
 " For Plugins {
     silent function! PackHome()
-      return MyVimrcDir().'/.vim/plugged'
+      return fnamemodify(g:this_vimrc, ':h').'/.vim/plugged'
     endfunction
-    " For scanning plugins under `pack/*/start` or `pack/*/opt` in packages home directory,
     " add packages home directory to the search path.
     let &packpath = printf('%s,%s', &packpath, PackHome())
     if !isdirectory(PackHome()) && exists('*mkdir')
-      call mkdir(PackHome(), 'p')
+      call mkdir(PackHome(), 'p', 0o700)
     endif
     " Plugins under `pack/*/opt` are not loaded; It is recommended to use `packadd` commands
     " in specific script file to run command. The following lines allows easy access.
-    function! PluginRcfile()
-      return MyVimrcDir().'/../tools.libs.scripts/vim-plugins.vim'
-    endfunction
-    nnoremap <leader>vp :execute 'vsplit' PluginRcfile()<CR>
-    if filereadable(PluginRcfile())
-      execute 'source '.PluginRcfile()
+    nnoremap <leader>vp :execute 'vsplit' g:my_toolbox.'/vim-plugins.vim'<CR>
+    if filereadable(g:my_toolbox.'/vim-plugins.vim')
+      execute 'source '.g:my_toolbox.'/vim-plugins.vim'
     endif
-
-    " Further: Let junegunn/vim-plug handle plugins? Def: CallVimPlugMgr
-    silent function! CallVimPlugMgr()
-      if !filereadable(PackHome().'/plug.vim')
-        let uri = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-        call JobStart('downloading vim-plug', 'curl -vLs -o '.PackHome().'/plug.vim '.uri, PackHome())
-      else
-        if !filereadable(PluginRcfile())
-          let tmplst = [ 'exec ''source ''.PackHome().''/plug.vim''',
-                \ 'call plug#begin(PackHome())',
-                \ 'Plug ''tpope/vim-fugitive''',
-                \ 'Plug ''yegappan/lsp''',
-                \ 'call plug#end()',
-                \ '" INITIALIZATION OF PLUGINs']
-          call writefile(tmplst, PluginRcfile(), 'b')
-        endif
-      endif
-    endfunction
-    command! -nargs=0 -bar CallVimPlug call CallVimPlugMgr() | echo 'done.'
 " }

@@ -1,41 +1,263 @@
-" Let junegunn/vim-plug handle plugins
-exec 'source '.PackHome().'/plug.vim'
-call plug#begin(PackHome())
-"
-" List the plugins with Plug commands
-Plug 'tpope/vim-fugitive'
-Plug 'yegappan/lsp'
-"Plug 'puremourning/vimspector'
-"Plug 'Freed-Wu/cppinsights.vim'
-"Plug 'girishji/devdocs.vim'
-"Plug 'diepm/vim-rest-console'
-Plug 'tomasiser/vim-code-dark'
-"Plug 'madox2/vim-ai'
-call plug#end()
-" INITIALIZATION OF PLUGINs
-
-"
-" use optional plugin with packadd command
-"
-packadd! editorconfig
+" vim: set foldmethod=marker: "
 
 
-"
-" colorscheme
-"
-colo codedark
+" Miscellaneous ----------------------------------------------------------- {{{
 
-"
-" Settings Plug 'yegappan/lsp'
-"
-"{
+" add optional plugin with build-in packadd
+silent! packadd! editorconfig
+
+" show tree view in netrw window
+let g:netrw_liststyle=3
+let g:netrw_keepdir=0
+let g:netrw_winsize=20
+let g:netrw_banner=0
+
+
+" local envs
+" INFO: core-utils provided by https://github.com/microsoft/coreutils
+" see: https://learn.microsoft.com/en-us/windows/core-utils/overview
+"let $PATH = g:my_toolbox."/scripts;".$PATH    " Got env of my scripts
+"if exists('&pythonthreehome') | let &pythonthreehome=expand("$HOME/.conda/envs/py38") | let $PATH = &pythonthreehome.";".&pythonthreehome."/Scripts;".$PATH | endif
+
+" 查词典
+nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
+" 有时候内置的gx不好使，比如路径使用了path/to/file而不是path\to\file或path\\to\\file时候
+vnoremap <leader>gx "vy:execute '!start' @v<CR>
+" 有点用。但是好像完全可以: 在源窗口yank文本到register之后，直接用paste粘贴。后者思路通用且简单(按键多)。
+tnoremap <C-L>r <Cmd>normal! gv"vy<CR><Cmd>call term_sendkeys('', getreg(v:register))<CR>
+" 用OS默认工具打开目标
+nnoremap <leader>S :!start<space><space>
+" Show syntax/hightlight group
+nnoremap <leader>hi :echomsg "hi<" . synIDattr(synID(line("."),col("."),1),"name") . "> trans<" . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+" }}}
+
+
+" Config of vscode-neovim ------------------------------------------------- {{{
+
+if has('nvim') && exists('g:vscode')
+
+  unsilent echomsg 'Config of vscode-neovim'
+
+lua << EOF
+local vscode = require('vscode')
+
+local function vscode_action(fn)
+  return function()
+    vscode.action(fn)
+  end
+end
+
+local function search_workspace(query)
+  vscode.action('workbench.action.findInFiles', {
+    args = { query = query },
+  })
+end
+
+local mappings = {
+  -- Navigation & Workspace Search
+  { 'n', '<leader>g', function() search_workspace(vim.fn.expand('<cword>')) end, 'Search workspace' },
+  { 'n', '<leader>q', vscode_action('workbench.action.closeActiveEditor'), 'Close editor' },
+  { 'n', '<leader>p', vscode_action('workbench.action.previousEditor'), 'Previous editor' },
+  { 'n', '<leader>n', vscode_action('workbench.action.nextEditor'), 'Next editor' },
+  { 'n', '<leader>o', vscode_action('workbench.action.openPreviousRecentlyUsedEditorInGroup'), 'Previous MRU editor' },
+  { 'n', '<leader>L', vscode_action('workbench.action.showAllEditors'), 'Show all editors' },
+  { { 'n', 'x' }, 'gf', vscode_action('editor.action.openLink'), 'Open file under cursor' },
+
+  -- LSP Aligned Mappings
+  { 'n', 'gO', vscode_action('C_Cpp.SwitchHeaderSource'), 'Switch header and source' },
+  { { 'n', 'x' }, 'gd', vscode_action('editor.action.revealDefinition'), 'Go to definition' },
+  { { 'n', 'x' }, 'gi', vscode_action('editor.action.goToImplementation'), 'Go to implementation' },
+  { 'n', 'gs', vscode_action('workbench.action.gotoSymbol'), 'Document symbols' },
+  { 'n', 'gS', vscode_action('workbench.action.showAllSymbols'), 'Workspace symbols' },
+  { { 'n', 'x' }, 'gr', vscode_action('editor.action.referenceSearch.trigger'), 'Peek references' },
+  { 'n', '[g', vscode_action('editor.action.marker.prevInFiles'), 'Previous diagnostic/error' },
+  { 'n', ']g', vscode_action('editor.action.marker.nextInFiles'), 'Next diagnostic/error' },
+  { 'n', 'K', vscode_action('editor.action.showHover'), 'Show hover information' },
+  { 'n', '<leader>rn', vscode_action('editor.action.rename'), 'Rename symbol' },
+  { { 'n', 'x' }, '<leader>ca', vscode_action('editor.action.quickFix'), 'Code actions' },
+  { { 'n', 'x' }, '<leader>fm', vscode_action('editor.action.formatSelection'), 'Format document/selection' },
+}
+
+for _, mapping in ipairs(mappings) do
+  vim.keymap.set(mapping[1], mapping[2], mapping[3], {
+    silent = true,
+    desc = mapping[4],
+  })
+end
+
+EOF
+
+endif
+
+" }}}
+
+
+" Config of neovim -------------------------------------------------------- {{{
+if has('nvim') && !exists('g:vscode')
+  let g:python3_host_prog = expand("$HOME/.conda/envs/py310/python.exe")
+  unsilent echomsg 'Config of nvim'
+
+lua << EOF
+vim.lsp.config('rust_analyzer', {
+  cmd = { 'rust-analyzer' },
+  filetypes = { 'rust' },
+  settings = {
+    ['rust-analyzer'] = {}
+  }
+})
+vim.lsp.enable('rust_analyzer')
+
+local function switch_source_header(bufnr, client)
+  local method_name = 'textDocument/switchSourceHeader'
+  if not client or not client:supports_method(method_name) then
+    return vim.notify(('method %s is not supported by any servers active on the current buffer'):format(method_name))
+  end
+  local params = vim.lsp.util.make_text_document_params(bufnr)
+  client:request(method_name, params, function(err, result)
+    if err then
+      error(tostring(err))
+    end
+    if not result then
+      vim.notify('corresponding file cannot be determined')
+      return
+    end
+    vim.cmd.edit(vim.uri_to_fname(result))
+  end, bufnr)
+end
+
+local function symbol_info(bufnr, client)
+  local method_name = 'textDocument/symbolInfo'
+  if not client or not client:supports_method(method_name) then
+    return vim.notify('Clangd client not found or method unsupported', vim.log.levels.ERROR)
+  end
+  local win = vim.api.nvim_get_current_win()
+  local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
+  client:request(method_name, params, function(err, res)
+    if err or not res or #res == 0 then
+      -- Clangd always returns an error, there is no reason to parse it
+      return
+    end
+    local container = string.format('container: %s', res[1].containerName or 'NONE') ---@type string
+    local name = string.format('name: %s', res[1].name) ---@type string
+    vim.lsp.util.open_floating_preview({ name, container }, '', {
+      height = 2,
+      width = math.max(string.len(name), string.len(container)),
+      focusable = false,
+      focus = false,
+      title = 'Symbol Info',
+    })
+  end, bufnr)
+end
+
+local function get_root_dir()
+  if vim.fn.exists('*ProjectDir') == 1 then
+    return vim.fn.ProjectDir()
+  end
+  return vim.fn.getcwd()
+end
+
+---@type vim.lsp.Config
+vim.lsp.config('clangd', {
+  cmd = { 'clangd', '--background-index', '--clang-tidy', '--header-insertion=never', '--completion-style=detailed',
+          '--pch-storage=disk', '--limit-references=500', '--limit-results=100', '-j=4',
+  },
+  filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' },
+  root_dir = get_root_dir(),
+  capabilities = {
+    textDocument = {
+      completion = {
+        editsNearCursor = true,
+      },
+    },
+    offsetEncoding = { 'utf-8', 'utf-16', 'utf-32' },
+  },
+  on_init = function(client, init_result)
+    if init_result.offsetEncoding then
+      client.offset_encoding = init_result.offsetEncoding
+    end
+  end,
+  on_attach = function(client, bufnr)
+    vim.lsp.completion.enable(true, client.id, bufnr, {
+      autotrigger = true,
+      convert = function(item)
+        return { abbr = item.label:gsub('%b()', '') }
+      end,
+    })
+    local opts = {noremap=true, silent=true, buffer=bufnr}
+    vim.keymap.set('n', 'gO', function() switch_source_header(bufnr, client) end, {noremap=true, silent=true, buffer=bufnr, desc='clangd: textDocument/switchSourceHeader'})
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', 'gs', vim.lsp.buf.document_symbol, opts)
+    vim.keymap.set('n', 'gS', function() symbol_info(bufnr, client) end, {noremap=true, silent=true, buffer=bufnr, desc='clangd: textDocument/symbolInfo'})
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '[g', function() vim.diagnostic.goto_prev({ float = true }) end, opts)
+    vim.keymap.set('n', ']g', function() vim.diagnostic.goto_next({ float = true }) end, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('v', '<leader>fm', vim.lsp.buf.format, opts)
+  end,
+})
+vim.lsp.enable('clangd')
+
+EOF
+endif
+
+" }}}
+
+
+" Let junegunn/vim-plug handle plugins ------------------------------------ {{{
+
+" Check and download junegunn/vim-plug
+if !filereadable(PackHome().'/plug.vim')
+  exec '!curl -vLs -o '.PackHome().'/plug.vim' 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+else
+  exec 'source '.PackHome().'/plug.vim'
+  call plug#begin(PackHome())
+  "
+  " List of plugins
+  Plug 'tpope/vim-fugitive'
+  Plug 'yegappan/lsp'
+  Plug 'tomasiser/vim-code-dark'
+  Plug 'libinwa/vim-code-light'
+  "Plug 'puremourning/vimspector'
+  "Plug 'Freed-Wu/cppinsights.vim'
+  "Plug 'girishji/devdocs.vim'
+  "Plug 'diepm/vim-rest-console'
+  "Plug 'madox2/vim-ai'
+  call plug#end()
+endif
+
+" }}}
+
+
+" Colorscheme from plugins ------------------------------------------------ {{{
+
+set termguicolors
+" fixing: Highlight groups's performance is different in termguicolor for some groups. :h xterm-true-color
+let &t_8u="\<Esc>[58:2::%lu:%lu:%lum"
+"colo codedark
+"colo quietlight    " green less, cold *
+set background=light
+colo codelight
+
+" }}}
+
+
+" Settings of 'yegappan/lsp' ---------------------------------------------- {{{
+
+if isdirectory(PackHome().'/lsp')
   let lspServers = []
   if executable('clangd')
     let lspServers += [#{
           \  name: 'clang',
-          \  filetype: ['c', 'cpp'],
+          \  filetype: [ 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' ],
           \  path: 'clangd',
-          \  args: ['--background-index', '--clang-tidy', '--header-insertion=never', '--completion-style=detailed'],
+          \  args: ['--background-index', '--clang-tidy', '--header-insertion=never', '--completion-style=detailed',
+          \         '--pch-storage=disk', '--limit-references=500', '--limit-results=100', '-j=4'],
           \  initializationOptions: #{
           \    completion: #{
           \      detailedLabel: v:true,
@@ -101,29 +323,29 @@ colo codedark
   endif
 
   let lspOpts = #{
-      \ autoHighlightDiags: v:true
+    \ autoHighlightDiags: v:true
   \}
 
 
   function! OnLspAttached()
-      setlocal formatexpr=lsp#lsp#FormatExpr()
-      " To jump to the symbol definition using the vim tag-commands Ctrl-]
-      if exists('+tagfunc') | setlocal tagfunc=lsp#lsp#TagFunc | endif
-      "Switch between source and header files.
-      nnoremap <buffer> ,O :LspSwitchSourceHeader<CR>
-      nnoremap <buffer> gD :LspGotoDeclaration<CR>
-      nnoremap <buffer> gd :LspGotoDefinition<CR>
-      nnoremap <buffer> gi :LspGotoImpl<CR>
-      nnoremap <buffer> gt :LspGotoTypeDef<CR>
-      nnoremap <buffer> gs :LspDocumentSymbol<CR>
-      nnoremap <buffer> gS :LspSymbolSearch<CR>
-      nnoremap <buffer> gr :LspPeekReferences<CR>
-      nnoremap <buffer> [g :LspDiagPrev<CR>
-      nnoremap <buffer> ]g :LspDiagNext<CR>
-      nnoremap <buffer> K  :LspHover<CR>
-      nnoremap <buffer> <leader>rn :LspRename<CR>
-      nnoremap <buffer> <leader>ca :LspCodeAction<CR>
-      vnoremap <buffer> <leader>fm :LspFormat<CR>
+    setlocal formatexpr=lsp#lsp#FormatExpr()
+    " To jump to the symbol definition using the vim tag-commands Ctrl-]
+    if exists('+tagfunc') | setlocal tagfunc=lsp#lsp#TagFunc | endif
+    "Switch between source and header files.
+    nnoremap <buffer> gO :LspSwitchSourceHeader<CR>
+    nnoremap <buffer> gD :LspGotoDeclaration<CR>
+    nnoremap <buffer> gd :LspGotoDefinition<CR>
+    nnoremap <buffer> gi :LspGotoImpl<CR>
+    nnoremap <buffer> gt :LspGotoTypeDef<CR>
+    nnoremap <buffer> gs :LspDocumentSymbol<CR>
+    nnoremap <buffer> gS :LspSymbolSearch<CR>
+    nnoremap <buffer> gr :LspPeekReferences<CR>
+    nnoremap <buffer> [g :LspDiagPrev<CR>
+    nnoremap <buffer> ]g :LspDiagNext<CR>
+    nnoremap <buffer> K  :LspHover<CR>
+    nnoremap <buffer> <leader>rn :LspRename<CR>
+    nnoremap <buffer> <leader>ca :LspCodeAction<CR>
+    vnoremap <buffer> <leader>fm :LspFormat<CR>
   endfunction
 
 
@@ -133,151 +355,21 @@ colo codedark
     autocmd User LspSetup call LspAddServer(lspServers)
     autocmd User LspAttached call OnLspAttached()
   augroup END
-"}
-
-
-"
-" local envs
-"
-"let $PATH = MyVimrcDir()."/../tools.libs.scripts/scripts;".$PATH    " Got env of my scripts
-"if isdirectory("C:/Program Files/Git/usr/bin") | let $PATH = $PATH.";C:/Program Files/Git/usr/bin" | endif       " for various tool at git home.
-"if isdirectory("C:\\Program Files\\Oracle\\VirtualBox") | let $PATH = $PATH.";C:\\Program Files\\Oracle\\VirtualBox" | endif
-"let $PATH = $PATH.';C:\\ProgramFiles\\llvm\\clang+llvm-20.1.4-x86_64-pc-windows-msvc\\bin'
-"if exists('&pythonthreehome') | let &pythonthreehome=expand("$HOME/.conda/envs/py38") | let $PATH = &pythonthreehome.";".&pythonthreehome."/Scripts;".$PATH | endif
-" http_proxy and https_proxy pointing to px (http://127.0.0.1:3128)
-"let $HTTP_PROXY="http://127.0.0.1:3128"
-"let $HTTPS_PROXY="http://127.0.0.1:3128"
-
-
-
-if has('nvim')
-  let g:python3_host_prog = expand("$HOME/.conda/envs/py38/python.exe")
-lua << EOF
-print('additional config for nvim')
-
-vim.lsp.config('rust_analyzer', {
-  cmd = { 'rust-analyzer' },
-  filetypes = { 'rust' },
-  settings = {
-    ['rust-analyzer'] = {}
-  }
-})
-
-vim.lsp.enable('rust_analyzer')
-
-
-local function switch_source_header(bufnr, client)
-  local method_name = 'textDocument/switchSourceHeader'
-  ---@diagnostic disable-next-line:param-type-mismatch
-  if not client or not client:supports_method(method_name) then
-    return vim.notify(('method %s is not supported by any servers active on the current buffer'):format(method_name))
-  end
-  local params = vim.lsp.util.make_text_document_params(bufnr)
-  ---@diagnostic disable-next-line:param-type-mismatch
-  client:request(method_name, params, function(err, result)
-    if err then
-      error(tostring(err))
-    end
-    if not result then
-      vim.notify('corresponding file cannot be determined')
-      return
-    end
-    vim.cmd.edit(vim.uri_to_fname(result))
-  end, bufnr)
-end
-
-local function symbol_info(bufnr, client)
-  local method_name = 'textDocument/symbolInfo'
-  ---@diagnostic disable-next-line:param-type-mismatch
-  if not client or not client:supports_method(method_name) then
-    return vim.notify('Clangd client not found', vim.log.levels.ERROR)
-  end
-  local win = vim.api.nvim_get_current_win()
-  local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
-  ---@diagnostic disable-next-line:param-type-mismatch
-  client:request(method_name, params, function(err, res)
-    if err or #res == 0 then
-      -- Clangd always returns an error, there is no reason to parse it
-      return
-    end
-    local container = string.format('container: %s', res[1].containerName) ---@type string
-    local name = string.format('name: %s', res[1].name) ---@type string
-    vim.lsp.util.open_floating_preview({ name, container }, '', {
-      height = 2,
-      width = math.max(string.len(name), string.len(container)),
-      focusable = false,
-      focus = false,
-      title = 'Symbol Info',
-    })
-  end, bufnr)
-end
-
----@class ClangdInitializeResult: lsp.InitializeResult
----@field offsetEncoding? string
-
----@type vim.lsp.Config
-vim.lsp.config ('clangd',
-  {
-  cmd = { 'clangd' },
-  filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda' },
-  root_dir = vim.fn.ProjectDir(),
-  --- root_markers = {
-  ---   '.clangd',
-  ---   '.clang-tidy',
-  ---   '.clang-format',
-  ---   'compile_commands.json',
-  ---   'compile_flags.txt',
-  ---   'configure.ac', -- AutoTools
-  ---   '.git',
-  --- },
-  capabilities = {
-    textDocument = {
-      completion = {
-        editsNearCursor = true,
-      },
-    },
-    offsetEncoding = { 'utf-8', 'utf-16' },
-  },
-  ---@param init_result ClangdInitializeResult
-  on_init = function(client, init_result)
-    if init_result.offsetEncoding then
-      client.offset_encoding = init_result.offsetEncoding
-    end
-  end,
-  on_attach = function(client, bufnr)
-    vim.lsp.completion.enable(true, client.id, bufnr, {
-      autotrigger = true,
-      convert = function(item)
-        return { abbr = item.label:gsub('%b()', '') }
-      end,
-    })
-    vim.keymap.set('n', ',O', switch_source_header, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'gS', symbol_info, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'gs', vim.lsp.buf.document_symbol, {noremap=true, silent=true, buffer=bufnr})
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, {noremap=true, silent=true, buffer=bufnr})
-  end,
-})
-
-vim.lsp.enable('clangd')
-
-EOF
 endif
 
+" }}}
 
 
-"
-" local settings
+" Finish: ----------------------------------------------------------------- {{{
+
 if filereadable(ProjectDir().'/.vimrc.local')
   exec 'source '.ProjectDir().'/.vimrc.local'
 endif
 
-
 finish
+
+" }}}
+
 
 
 
@@ -294,9 +386,9 @@ vim notes.
 ## Practice and Tips
 
 0. jk                          : Escape from Insert Mode
-1. <leader>w                   : 敲CTRL-W太费指头, mapping for wincmd is nice. 例如<leader>wL可以move window right
-2. !start .                    : Windows Explorer中打开当前工作目录；用<leader>W可以给出!start然后手动敲入待执行命令
-3. !start % 或 !start /B %     : 用Windows上默认应用程序打开当前文件；Visual Mode下选中目标文件敲<leader>W打开；
+1. <leader>w                   : 敲CTRL-W太费指头, mapping for wincmd is nice. 例如敲 <leader>wL 就能 Move window right
+2. Launch .                    : Windows Explorer中打开当前工作目录（linux也适用）
+3. Launch %或!start %          : 用Windows上默认应用程序（!start /B %）打开当前文件；Visual Mode下选中目标文件敲 gx 打开 (linux也适用gx)
 4. :cd %:h                     : 切到当前文件所在目录，用<leader>cd更容易；CD %:h切换ProiectDir为当前文件目录；
 5. :CD!                        : Seek ProjectDir that contains current file; CD切换当前目录到ProjectDir；
 6. :on                         : Command would close all windows but the current one, see ":h only"
@@ -305,10 +397,10 @@ vim notes.
 9. <C-K/J/L/H>                 : resize window
 10. :Find/Find!/Finda          : search target file
 11. :Grep/Grep!/Grepa          : search target content; 'Grep content %' searchs content from current file
-12. :Run                       : run vimscript line(s), line range area is allowed.
-13. <space><enter>             : execute the selected CLIs in Visual Mode with shell.
-14. <leader>ai                 : 呼出AIChat, nnoremap <leader>ai :AIChat <space <space>和vnoremap <leader>ai :AIChat<space><space>
-15. <leader>ed                 : 编辑或新建文件；文件fullpath可以来自Normal Mode光标下文件<cfile>或Visual Mode下选中的文件路径
+12. :Run                       : Run vimscript lines or line ranges.
+13. <space><enter>             : Execute the visual selection (Visual Mode) as a shell command
+14. <leader>ai                 : 呼出AIChat, nnoremap <leader>ai :AIChat <space> <space>和vnoremap <leader>ai :AIChat<space><space>
+15. :edit <C-R><C-F>           : 编辑或新建文件；文件fullpath可以来自<C-R><C-F>（光标下textobject）给出的文件路径；<C-R><C-F>也可以获取netrw中光标下路径
 16. gf 或 gF                   : go to file under the cursor (file name is checked with &isfname option)
 17. :Red ol 或 :Recent         : Red重定向Command输出到窗口；组合Red ol列出recent files之后进一步搜索目标文件，敲入gf就可以打开；
 18. <leader>gb                 : 根据光标下<cWORD>(通常是ls命令列出的buffer number)显示buffer到当前window；
@@ -322,7 +414,16 @@ vim notes.
 26. <C-E>                      : under Insert Mode, eval expr in register (@") and put result at cursor position
 27. gv"vy                      : yank previous selection (previous area in Visual Mode) with register v.
 28. :r !tree %:h               : 引用命令输出；外部命令tree输出当前文件所在目录下子目录（树形结构）
-29. :e %:p                     : type tab key to expand `%:p` to a full path
+29. :e %:p 或 :edit %:p        : type <tab> key to expand `%:p` to a full path
+30. :g或:global                : 对于满足pattern的行执行命令cmd，`:g/{pattern}/{cmd}`
+31. <leader>di                 : 查字典 nnoremap <leader>di  :!start https://www.bing.com/dict/search?q=<cword>&FORM=BDVSP6&cc=cn<CR>
+32. M/H/L                      : 快速移动光标到窗口所显示内容的中部/头部/底部
+33. <leader>x或:Rexplore       : 回到Explore目录netrw窗口或从Explore目录netrw窗口离开
+34. <leader>X或直接敲:Lexplore : 左侧展示Explore窗口；窗口(netrw)内敲I隐藏banner,小i变换显示方式,小r是排序,小o新窗口打开文件,大O是Obtain远端文件,回车也是打开文件。
+35. MOVE MOVE                  : 使用hijk或count +E/e/B/b移动光标靠近目标text object
+36. MOVE FAST  : f/F/t/T +目标字符或附近的容易字符快速到达目标或附近，然后hijk移动到目标；如果有重复字符导致f/F/t/T还没有靠近目标，则使用;/,重复上一次f/F/t/T以快速靠近目标。
+37. y.         : yank full path of file in current buffer, and full path of file under the cursor in netrw window
+38. za         : 常规模式下敲zi键来开关光标行所在行的折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
 
 
 Regexp in vim: Vim 有自己独特的正则语法风格，既不是 POSIX，也不是 PCRE。但它支持两种正则模式:
@@ -368,12 +469,16 @@ endif
 FZF Tips:
 - Can I copy selections from fzf.vim window to quickfix window? Yes, type <tab> to select targets and the press <enter>
 
-2. good practice with tags in vim
+2. Jumping with tags
+
+Tags are entities that appear in "tags" files. And "tags" file should be generated by tagging system.
+The following plugins integrated the tagging system of "gtags" or "cscope" can be easy to use the system.
 
  - Plug 'ludovicchabant/vim-gutentags'
  - Plug 'skywind3000/gutentags_plus'
 
-Settings:
+And settings as following:
+
 ```vimscript
 if isdirectory(PackHome().'/vim-gutentags')
   let g:gutentags_project_root = g:this_project.markers
@@ -480,6 +585,12 @@ help i_CTRL-X_s
   > To undo this action use zw, which comments out the line in the dictionary file. You can
   > also remove the entry by hand from the spell file (defined by :set spf?).
 
+  " Good practice:
+  if &spell
+    let &spf = 'path/to/spell.'.&encoding.'.add'
+    " Easy to open the word list file
+    nnoremap <leader>vz :exec 'vs' &spf<CR>
+  endif
 
 8. Quickfix: Using `:cdo` to execute command on every item in quickfix list.
 
@@ -487,9 +598,9 @@ help i_CTRL-X_s
 
 9. Jump with CTRL-o/CTRL-i, which is based on jumplist (see :jumps).
 
-`CTRL-o` jump to an older position, and `CTRL-i` brings you to a newer position. The mnemonic
-would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes
-going through a door, that is.
+`CTRL-o` jump to an older position, and `CTRL-i`(or <tab>) brings you to a newer position. The mnemonic
+would be O = OUT, I = IN => Ctrl-O brings you out, Ctrl-I brings you in. If every jump likes going through
+a door, that is. NOTE: set jumpoptions+=stack to use stack-based jumps is better than classic one.
 
 10. Why does vim expand wildcards? I want disable it!
 
@@ -527,3 +638,27 @@ Example:
 `:Red ol` and navigate to target file in the list, then type `gf` to open it! And an alternative way is
 `:browse ol`, which can list and allows to make a choice in the list file.
 
+14. What's the good practice browsing folder and files of my project?
+
+netrw: netrw重新打开是否可以保持上次打开时候导航到的folder？
+不能，但可以使用书签功能。netrw中敲击mb给当前folder设置书签b；下次打开netrw后按gb即可跳转到书签目录。
+
+>**Navigation** (https://vonheikemen.github.io/devlog/tools/using-netrw-vim-builtin-file-explorer/)
+> If we want to move between directories and files these are the keymaps we need to know:
+>
+>  1. Enter: Opens a directory or a file.
+>  2. -: Go up to the parent directory.
+>  3. u: Go back to the previous directory in the history.
+>  4. gb: Jump to the most recent directory saved on the "Bookmarks". To create a bookmark we use mb.
+>
+> Let's recap. If we want to "go down a directory" we use Enter. To "go up" we use -. To go back, u.
+> And if we want to "jump" quickly to a directory of our choosing we should first add it to the bookmarks (using mb) and then we can use gb to go there.
+>
+
+15. 为什么GitLog命令通过jobstart输出7万行到buffer(通过setbufline函数)需要53s？同样的脚本回调处理逻辑，为什么nvim输出7万行到buffer不足1s！
+
+实验和比对实现代码，根本原因是vim的channel是按行调用回调函数，nvim的channel是遇到eof或临时缓存满时调用一次回调函数。所以，实验发现同样的业务逻辑和回调数据量，vim中的回调的被调用了7万次，而nvim中被回调7次。
+vim repo: src\channel.c (2707)
+static void invoke_one_time_callback( channel_T   *channel, cbq_T          *cbhead, cbq_T             *item, typval_T    *argv)
+nvim repo: src\nvim\channel.c (730)
+void channel_reader_callbacks(Channel *chan, CallbackReader *reader)
